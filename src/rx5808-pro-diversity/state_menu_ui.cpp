@@ -2,7 +2,7 @@
 #include "state_menu.h"
 #include "ui.h"
 #include "ui_menu.h"
-#include "pstr_helper.h"
+// #include "pstr_helper.h" // PICO FIX: Not needed. Strings are read directly.
 
 
 #define TRIANGLE_SIZE 4
@@ -42,7 +42,10 @@ void StateMachine::MenuStateHandler::onUpdateDraw() {
 
 void StateMachine::MenuStateHandler::drawMenuEntry() {
     const Ui::MenuItem* item = this->menu.getCurrentItem();
-    const uint8_t charLen = strlen(PSTRtoBuffer_P(item->text));
+    
+    // PICO FIX: Removed PSTRtoBuffer_P wrapper.
+    // item->text is a standard pointer directly readable by the Pico.
+    const uint8_t charLen = strlen(item->text);
 
     Ui::display.setTextSize(2);
     Ui::display.setTextColor(WHITE);
@@ -50,7 +53,7 @@ void StateMachine::MenuStateHandler::drawMenuEntry() {
         SCREEN_WIDTH_MID - (charLen * ((CHAR_WIDTH + 1) * 2)) / 2,
         TEXT_Y
     );
-    Ui::display.print(PSTRtoBuffer_P(item->text));
+    Ui::display.print(item->text);
 
     if (item->icon) {
         Ui::clearRect(

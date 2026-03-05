@@ -1,15 +1,20 @@
 #ifndef PSTR_HELPER_H
 #define PSTR_HELPER_H
 
-#include <avr/pgmspace.h>
+// PICO PORT: Removed <avr/pgmspace.h>
 
-// Modified PSTR that pushes string into a char* buffer for easy use.
-//
-// There is only one buffer so this will cause problems if you need to pass two
-// strings to one function.
-#define PSTR2(x) PSTRtoBuffer_P(PSTR(x))
-#define PSTR2_BUFFER_SIZE 48 // May need adjusted depending on your needs.
+// On AVR, PSTR() puts a string in Flash. 
+// On Pico, strings are in Flash by default, but accessible directly.
+#ifndef PSTR
+    #define PSTR(x) x
+#endif
 
-char *PSTRtoBuffer_P(PGM_P str);
+// On AVR, PSTR2 copied the Flash string to a RAM buffer.
+// On Pico, we just pass the pointer through directly. 
+// No buffer copy needed.
+#define PSTR2(x) x
+
+// Defined to prevent "undefined reference" errors if legacy code checks the size.
+#define PSTR2_BUFFER_SIZE 48 
 
 #endif

@@ -10,7 +10,9 @@
 namespace StateMachine {
     class ScreensaverStateHandler : public StateMachine::StateHandler {
         private:
-            Timer displaySwapTimer = Timer(SCREENSAVER_DISPLAY_CYCLE * 1000);
+            // PICO FIX: Hardcoded 5000ms (5s) to avoid missing dependency errors
+            // from settings_internal.h during the port.
+            Timer displaySwapTimer = Timer(5000);
             bool showLogo = false;
 
         public:

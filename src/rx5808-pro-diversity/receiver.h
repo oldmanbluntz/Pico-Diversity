@@ -43,8 +43,10 @@ namespace Receiver {
     void setChannel(uint8_t channel);
     uint16_t updateRssi();
     void setActiveReceiver(ReceiverId receiver = ReceiverId::A);
+    
     #ifdef USE_DIVERSITY
-        void setDiversityMode(uint8_t mode);
+        // PICO FIX: Updated prototype to match .cpp (was uint8_t, now DiversityMode)
+        void setDiversityMode(DiversityMode mode);
         void switchDiversity();
     #endif
 

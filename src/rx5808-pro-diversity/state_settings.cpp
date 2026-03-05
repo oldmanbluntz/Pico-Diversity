@@ -1,4 +1,4 @@
-#include <avr/pgmspace.h>
+#include <Arduino.h>
 
 #include "state_settings.h"
 
@@ -6,7 +6,7 @@
 #include "buttons.h"
 #include "ui.h"
 
-#include "pstr_helper.h"
+// #include "pstr_helper.h" // PICO FIX: Not needed.
 
 
 void StateMachine::SettingsStateHandler::onEnter() {
@@ -36,7 +36,10 @@ void StateMachine::SettingsStateHandler::onInitialDraw() {
 
     Ui::display.setTextSize(1);
     Ui::display.setCursor(0, 0);
-    Ui::display.print(PSTR2("Press mode for\nRSSI calibration"));
+    
+    // PICO FIX: Removed PSTR2 wrapper. 
+    // Standard strings work natively on ARM.
+    Ui::display.print("Press mode for\nRSSI calibration");
 
     Ui::needDisplay();
 }

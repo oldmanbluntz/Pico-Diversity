@@ -1,31 +1,6 @@
-/*
- * Setings file by Shea Ivey
-
-The MIT License (MIT)
-
-Copyright (c) 2015 Shea Ivey
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
 #ifndef SETTINGS_H
 #define SETTINGS_H
+#include <Arduino.h> 
 
 
 // === Display Module ==========================================================
@@ -72,18 +47,10 @@ SOFTWARE.
 
 #define USE_DIVERSITY
 
-// Enable this to switch receivers much faster. This uses the port registers
-// to switch rather than the Arduino helper functions.
-//
-// WARNING: You can only use this if your receivers are on the same port.
-// Arduino/ATmega has 3 ports: PORTD, PORTB, and PORTC. The "default" hardware
-// configuration uses pins A0 and A1 (PORTC), so if you're using reasonably
-// standard hardware then this should be fine.
-//
-// PORTC: Pins A0-A7
-// PORTD: 0-7
-// PORTB: 8-13
-#define USE_DIVERSITY_FAST_SWITCHING
+// PICO FIX: DISABLED "Fast Switching".
+// This uses AVR-specific Port Registers (PORTB, DDRB) which do not exist on Pico.
+// The Pico is 133MHz (vs Arduino 16MHz), so standard switching is plenty fast.
+// #define USE_DIVERSITY_FAST_SWITCHING
 
 //#define USE_IR_EMITTER
 //#define USE_SERIAL_OUT // Not compatible with IR emitter.
@@ -104,36 +71,49 @@ SOFTWARE.
 // Local laws may prohibit the use of these frequencies so use at your own risk!
 #define USE_LBAND
 
-// === Pins ====================================================================
+// === Pins (Raspberry Pi Pico Mapping) ========================================
 
-// Buttons (required)
-#define PIN_BUTTON_UP 2
-#define PIN_BUTTON_MODE 3
+// --- BUTTONS ---
+#define PIN_BUTTON_UP     2   // GP2
+#define PIN_BUTTON_MODE   3   // GP3
+#define PIN_BUTTON_DOWN   4   // GP4
+#define PIN_BUTTON_SAVE   5   // GP5 (Optional)
 
-// Buttons (optional, for comfort)
-#define PIN_BUTTON_DOWN 4
-#define PIN_BUTTON_SAVE 5
+// --- SYSTEM INDICATORS ---
+#ifdef PIN_LED
+    #undef PIN_LED
+#endif
+#define PIN_LED           22  // GP22 (Status LED)
 
-#define PIN_LED 13
-#define PIN_BUZZER 6 // Must be an active buzzer, not passive.
+#define PIN_BUZZER        16  // GP16 (Passive Buzzer)
 
-#define PIN_SPI_DATA 10
-#define PIN_SPI_SLAVE_SELECT 11
-#define PIN_SPI_CLOCK 12
+// --- SPI / TUNING CONTROL (Bit-Banged) ---
+#define PIN_SPI_DATA      19  // GP19 (MOSI)
+#define PIN_SPI_CLOCK     18  // GP18 (SCK)
+#define PIN_SPI_SLAVE_SELECT 20 // GP20 (RX A Latch)
+#define PIN_SLAVE_SELECT_B   21 // GP21 (RX B Latch)
 
-#define PIN_RSSI_A A6
-#define PIN_LED_A A0
+// --- DIVERSITY & VIDEO SWITCHING ---
+#define PIN_RSSI_A        26  // GP26 (ADC0) - Analog Input
+
+// Map "LEDs" to the ADG6412 Switch Pins (Control Logic)
+#define PIN_LED_A         14  // GP14 (RX A Active / Video Switch A)
+
+#define USE_DIVERSITY         // Force Diversity Mode ON
 #ifdef USE_DIVERSITY
-    #define PIN_LED_B A1
-    #define PIN_RSSI_B A7
+    #define PIN_RSSI_B    27  // GP27 (ADC1) - Analog Input
+    #define PIN_LED_B     15  // GP15 (RX B Active / Video Switch B)
 #endif
 
+// --- DISPLAY (I2C) ---
+// On Pico, default I2C0 is GP0/GP1, but you can define others here.
+// You must call Wire.setSDA/SCL in setup() if changing these from defaults.
+#define PIN_OLED_SDA      0   // GP0
+#define PIN_OLED_SCL      1   // GP1
+
+
 #ifdef USE_VOLTAGE_MONITORING
-    #ifdef TVOUT_SCREENS
-        #define PIN_VBAT A4
-    #else
-        #define PIN_VBAT A2
-    #endif
+    #define PIN_VBAT      28  // GP28 (ADC2) - Example for Pico
 #endif
 
 // === Diversity ===============================================================
@@ -186,8 +166,8 @@ SOFTWARE.
 // === RSSI ====================================================================
 
 // RSSI default raw range.
-#define RSSI_MIN_VAL 90
-#define RSSI_MAX_VAL 220
+#define RSSI_MIN_VAL 100
+#define RSSI_MAX_VAL 350
 
 // 75% threshold, when channel is printed in spectrum.
 #define RSSI_SEEK_FOUND 75

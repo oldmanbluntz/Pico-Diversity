@@ -1,7 +1,7 @@
 #ifndef UI_STATE_MENU_H
 #define UI_STATE_MENU_H
 
-
+#include <stdint.h> // PICO FIX: Required for int8_t type
 #include "buttons.h"
 #include "ui.h"
 

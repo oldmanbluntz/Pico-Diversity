@@ -1,6 +1,8 @@
 #include <stdint.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <avr/pgmspace.h>
+// #include <avr/pgmspace.h> // PICO FIX: Removed AVR specific header
 
 #include "settings.h"
 #include "settings_internal.h"
@@ -8,13 +10,18 @@
 
 
 namespace Ui {
-    OLED_CLASS display;
+    OLED_CLASS display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
     bool shouldDrawUpdate = false;
     bool shouldDisplay = false;
     bool shouldFullRedraw = false;
 
 
     void setup() {
+        // PICO NOTE: Ensure I2C is started. 
+        // If your OLED is on specific pins (not default GP4/GP5), 
+        // you may need Wire.setSDA(pin) and Wire.setSCL(pin) before this.
+        Wire.begin(); 
+
         display.begin(OLED_VCCSTATE, OLED_ADDRESS);
 
         display.setTextColor(WHITE);
@@ -22,8 +29,7 @@ namespace Ui {
         display.setTextWrap(false);
 
         display.clearDisplay();
-
-        display.begin();
+        display.display(); // Force an initial clear
     }
 
     void update() {

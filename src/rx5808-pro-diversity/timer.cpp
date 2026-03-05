@@ -2,7 +2,9 @@
 #include "timer.h"
 
 
-Timer::Timer(uint16_t delay) {
+// PICO PORT: Upgraded delay to uint32_t.
+// This prevents overflow for timers longer than 65 seconds (uint16 limit).
+Timer::Timer(uint32_t delay) {
     this->delay = delay;
     this->nextTick = millis() + this->delay;
     this->ticked = false;

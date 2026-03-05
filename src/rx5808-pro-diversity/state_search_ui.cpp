@@ -3,7 +3,7 @@
 #include "receiver.h"
 #include "channels.h"
 #include "ui.h"
-#include "pstr_helper.h"
+// #include "pstr_helper.h" // PICO FIX: Not needed.
 
 
 #define BORDER_GRAPH_L_X 59
@@ -177,10 +177,12 @@ void StateMachine::SearchStateHandler::drawRssiGraph() {
         display.setTextColor(INVERSE);
 
         display.setCursor(RX_TEXT_X, RX_TEXT_A_Y);
-        display.print(PSTR2("B"));
+        // PICO FIX: Standard string, no PSTR2 wrapper
+        display.print("B"); 
 
         display.setCursor(RX_TEXT_X, RX_TEXT_B_Y);
-        display.print(PSTR2("A"));
+        // PICO FIX: Standard string, no PSTR2 wrapper
+        display.print("A");
     #else
         Ui::drawGraph(
             Receiver::rssiALast,

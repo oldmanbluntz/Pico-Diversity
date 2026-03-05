@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <new> // PICO FIX: Use standard header for placement new
 
 #include "state.h"
 
@@ -15,10 +16,12 @@
 #include "timer.h"
 
 
-void *operator new(size_t size, void *ptr){
-  return ptr;
-}
+// PICO FIX: Removed manual definition of 'operator new'.
+// The ARM toolchain provides this via <new>.
 
+#ifdef MAX
+    #undef MAX
+#endif
 #define MAX(a, b) (a > b ? a : b)
 #define STATE_BUFFER_SIZE \
     MAX(sizeof(ScreensaverStateHandler), \

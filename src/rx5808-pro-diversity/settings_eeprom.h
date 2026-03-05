@@ -3,7 +3,7 @@
 
 
 #include <stdint.h>
-#include <avr/pgmspace.h>
+// #include <avr/pgmspace.h> // PICO FIX: Removed
 
 #include "settings.h"
 #include "settings_internal.h"
@@ -45,7 +45,10 @@ struct EepromSettings {
 };
 
 
-PROGMEM const struct {
+// PICO FIX: Removed PROGMEM.
+// 'static const' ensures it stays in Flash and has internal linkage 
+// (doesn't cause "multiple definition" errors if included in multiple files).
+static const struct {
     uint32_t magic = EEPROM_MAGIC;
     uint8_t startChannel = 0;
 

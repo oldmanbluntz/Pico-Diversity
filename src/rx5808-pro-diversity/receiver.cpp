@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <avr/pgmspace.h>
+// #include <avr/pgmspace.h> // REMOVED: Not compatible with Pico
 
 #include "settings.h"
 #include "settings_eeprom.h"
@@ -45,27 +45,13 @@ namespace Receiver {
     }
 
     void setActiveReceiver(ReceiverId receiver) {
+        // PICO FIX: Removed AVR "Fast Switching" Assembly.
+        // The RP2040 is 133MHz; standard digitalWrite is fast enough.
+        // This controls the ADG6412 via the pins mapped in settings.h
+        
         #ifdef USE_DIVERSITY
-            #ifdef USE_DIVERSITY_FAST_SWITCHING
-                uint8_t targetPin, disablePin;
-                if (receiver == ReceiverId::A) {
-                    targetPin = PIN_LED_A;
-                    disablePin = PIN_LED_B;
-                } else {
-                    targetPin = PIN_LED_B;
-                    disablePin = PIN_LED_A;
-                }
-
-                uint8_t port = digitalPinToPort(targetPin);
-                uint8_t targetBit = digitalPinToBitMask(targetPin);
-                uint8_t disablebit = digitalPinToBitMask(disablePin);
-                volatile uint8_t *out = portOutputRegister(port);
-
-                *out = (*out | targetBit) & ~disablebit;
-            #else
-                digitalWrite(PIN_LED_A, receiver == ReceiverId::A);
-                digitalWrite(PIN_LED_B, receiver == ReceiverId::B);
-            #endif
+            digitalWrite(PIN_LED_A, receiver == ReceiverId::A);
+            digitalWrite(PIN_LED_B, receiver == ReceiverId::B);
         #else
             digitalWrite(PIN_LED_A, HIGH);
         #endif
@@ -78,11 +64,14 @@ namespace Receiver {
     }
 
     uint16_t updateRssi() {
-        analogRead(PIN_RSSI_A); // Fake read to let ADC settle.
-        rssiARaw = analogRead(PIN_RSSI_A);
+        // PICO FIX: Bit-shift (>> 2) converts 12-bit (4096) to 10-bit (1024)
+        
+        analogRead(PIN_RSSI_A); // Fake read to let ADC settle
+        rssiARaw = analogRead(PIN_RSSI_A) >> 2; 
+
         #ifdef USE_DIVERSITY
             analogRead(PIN_RSSI_B);
-            rssiBRaw = analogRead(PIN_RSSI_B);
+            rssiBRaw = analogRead(PIN_RSSI_B) >> 2;
         #endif
 
         rssiA = constrain(
@@ -125,6 +114,7 @@ namespace Receiver {
 
             rssiLogTimer.reset();
         }
+        return rssiA; // Added return to suppress compiler warning
     }
 
 #ifdef USE_DIVERSITY
@@ -178,6 +168,9 @@ namespace Receiver {
 #endif
 
     void setup() {
+        // PICO FIX: Removed TCCR1A/TCCR1B register setup.
+        // The Timer is now handled by the SDK Timer in the main .ino file.
+        
         #ifdef DISABLE_AUDIO
             ReceiverSpi::setPowerDownRegister(0b00010000110111110011);
         #endif
@@ -201,18 +194,18 @@ namespace Receiver {
 
 #ifdef USE_SERIAL_OUT
 
-#include "pstr_helper.h"
+// PICO FIX: Removed "pstr_helper.h" dependency. Used standard strings.
 
 static void writeSerialData() {
     if (Receiver::serialLogTimer.hasTicked()) {
         Serial.print(Receiver::activeChannel, DEC);
-        Serial.print(PSTR2("\t"));
+        Serial.print("\t");
         Serial.print(Receiver::rssiA, DEC);
-        Serial.print(PSTR2("\t"));
+        Serial.print("\t");
         Serial.print(Receiver::rssiARaw, DEC);
-        Serial.print(PSTR2("\t"));
+        Serial.print("\t");
         Serial.print(Receiver::rssiB, DEC);
-        Serial.print(PSTR2("\t"));
+        Serial.print("\t");
         Serial.println(Receiver::rssiBRaw, DEC);
 
         Receiver::serialLogTimer.reset();

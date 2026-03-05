@@ -84,6 +84,18 @@ static inline void sendBit(uint8_t value) {
 }
 
 static inline void sendSlaveSelect(uint8_t value) {
-    digitalWrite(PIN_SPI_SLAVE_SELECT, value);
+    // PICO FIX: Drive BOTH modules so they tune together.
+    // We defined PIN_SLAVE_SELECT_B in settings.h for the Pico build.
+    
+    digitalWrite(PIN_SPI_SLAVE_SELECT, value); // Receiver A
+    
+    #ifdef USE_DIVERSITY
+        // If Diversity is enabled, we must latch Receiver B too.
+        // Check if the B pin is actually defined to prevent errors.
+        #ifdef PIN_SLAVE_SELECT_B
+            digitalWrite(PIN_SLAVE_SELECT_B, value); // Receiver B
+        #endif
+    #endif
+
     delayMicroseconds(1);
 }

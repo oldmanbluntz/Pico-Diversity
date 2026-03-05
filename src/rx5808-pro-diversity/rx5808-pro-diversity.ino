@@ -33,6 +33,8 @@ SOFTWARE.
 */
 
 
+#include <EEPROM.h> // PICO FIX: Required for flash emulation
+
 #include "settings.h"
 #include "settings_internal.h"
 #include "settings_eeprom.h"
@@ -54,6 +56,10 @@ static void globalMenuButtonHandler(
 
 void setup()
 {
+    // PICO FIX: Initialize the Flash Emulation Buffer (512 bytes).
+    // MUST be called before setupSettings() or any EEPROM access.
+    EEPROM.begin(512);
+
     setupPins();
 
     // Enable buzzer and LED for duration of setup process.
@@ -91,23 +97,41 @@ void setupPins() {
     pinMode(PIN_BUTTON_UP, INPUT_PULLUP);
     pinMode(PIN_BUTTON_MODE, INPUT_PULLUP);
     pinMode(PIN_BUTTON_DOWN, INPUT_PULLUP);
-    pinMode(PIN_BUTTON_SAVE, INPUT_PULLUP);
-
-    pinMode(PIN_LED_A,OUTPUT);
-    #ifdef USE_DIVERSITY
-        pinMode(PIN_LED_B,OUTPUT);
+    
+    // PICO FIX: Guard SAVE button if not used
+    #ifdef PIN_BUTTON_SAVE
+        pinMode(PIN_BUTTON_SAVE, INPUT_PULLUP);
     #endif
 
-    pinMode(PIN_RSSI_A, INPUT_PULLUP);
+    pinMode(PIN_LED_A, OUTPUT);
+    
     #ifdef USE_DIVERSITY
-        pinMode(PIN_RSSI_B, INPUT_PULLUP);
+        pinMode(PIN_LED_B, OUTPUT);
     #endif
 
+    // PICO FIX: Changed INPUT_PULLUP to INPUT for RSSI.
+    // Pullups skew the analog voltage reading on the Pico ADC.
+    pinMode(PIN_RSSI_A, INPUT);
+    
+    #ifdef USE_DIVERSITY
+        pinMode(PIN_RSSI_B, INPUT);
+    #endif
+
+    // --- SPI Initialization ---
     pinMode(PIN_SPI_SLAVE_SELECT, OUTPUT);
     pinMode(PIN_SPI_DATA, OUTPUT);
-	pinMode(PIN_SPI_CLOCK, OUTPUT);
+    pinMode(PIN_SPI_CLOCK, OUTPUT);
 
-    digitalWrite(PIN_SPI_SLAVE_SELECT, HIGH);
+    digitalWrite(PIN_SPI_SLAVE_SELECT, HIGH); // Deselect Module A
+    
+    // PICO FIX: Initialize Module B Latch if diversity is enabled
+    #ifdef USE_DIVERSITY
+        #ifdef PIN_SLAVE_SELECT_B
+            pinMode(PIN_SLAVE_SELECT_B, OUTPUT);
+            digitalWrite(PIN_SLAVE_SELECT_B, HIGH); // Deselect Module B
+        #endif
+    #endif
+
     digitalWrite(PIN_SPI_CLOCK, LOW);
     digitalWrite(PIN_SPI_DATA, LOW);
 }

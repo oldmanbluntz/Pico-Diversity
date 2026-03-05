@@ -2,6 +2,8 @@
 #define UI_H
 
 
+#include <Wire.h>
+#include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <stdint.h>
 
@@ -20,7 +22,9 @@
 
 
 namespace Ui {
+    // OLED_CLASS is defined in settings.h (usually Adafruit_SSD1306)
     extern OLED_CLASS display;
+    
     extern bool shouldDrawUpdate;
     extern bool shouldDisplay;
     extern bool shouldFullRedraw;

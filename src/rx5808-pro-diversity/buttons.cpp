@@ -22,6 +22,7 @@ namespace Buttons {
 
 
     void update() {
+        // Macro to simplify the update calls
         #define UPDATE_BUTTON(button) \
             updateButton( \
                 Button::button, \
@@ -32,7 +33,11 @@ namespace Buttons {
         UPDATE_BUTTON(UP);
         UPDATE_BUTTON(DOWN);
         UPDATE_BUTTON(MODE);
-        UPDATE_BUTTON(SAVE);
+        
+        // PICO FIX: Guard this to prevent errors if SAVE is undefined in settings.h
+        #ifdef PIN_BUTTON_SAVE
+            UPDATE_BUTTON(SAVE);
+        #endif
 
         #undef UPDATE_BUTTON
     }
@@ -81,7 +86,8 @@ namespace Buttons {
         struct ButtonState &state,
         const uint8_t pin
     ) {
-        const uint8_t reading = !digitalRead(pin); // Invert as we use pull-ups.
+        // Reads the pin (Active LOW because of Input Pullups)
+        const uint8_t reading = !digitalRead(pin); 
 
         if (reading != state.lastReading) {
             state.lastDebounceTime = millis();

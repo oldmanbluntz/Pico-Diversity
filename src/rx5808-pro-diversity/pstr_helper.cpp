@@ -1,19 +1,12 @@
 #include "pstr_helper.h"
-#include <avr/pgmspace.h>
 
-char PSTR2_BUFFER[PSTR2_BUFFER_SIZE];
+// ============================================================================
+// PICO PORT NOTE:
+// The Raspberry Pi Pico (ARM Cortex-M0+) allows direct access to Flash memory.
+// The original AVR "Program Space" buffer logic is not required here.
+//
+// This file is intentionally left (mostly) empty to satisfy the build system.
+// ============================================================================
 
-char *PSTRtoBuffer_P(PGM_P str) { 
-    uint8_t i = 0;
-    
-    for (
-        uint8_t c = '\0';
-        c = pgm_read_byte(str + i) && i < sizeof(PSTR2_BUFFER); 
-        i++
-    ) {
-        PSTR2_BUFFER[i] = pgm_read_byte(str + i);
-    }
-    
-    PSTR2_BUFFER[i] = '\0'; // Loop drops early so add in finishing terminator.
-    return PSTR2_BUFFER;
-}
+// If legacy code explicitly asks for the buffer (unlikely), we define it here.
+char PSTR2_BUFFER[PSTR2_BUFFER_SIZE]; 

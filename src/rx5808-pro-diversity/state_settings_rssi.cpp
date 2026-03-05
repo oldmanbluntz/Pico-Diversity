@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <Arduino.h> // Added for general definitions
 
 #include "state_settings_rssi.h"
 
@@ -11,7 +12,7 @@
 #include "buttons.h"
 
 #include "ui.h"
-#include "pstr_helper.h"
+// #include "pstr_helper.h" // PICO FIX: Not needed.
 
 
 void StateMachine::SettingsRssiStateHandler::onEnter() {
@@ -115,42 +116,43 @@ void StateMachine::SettingsRssiStateHandler::onUpdateDraw() {
         case InternalState::WAIT_FOR_LOW:
             Ui::display.setTextSize(1);
             Ui::display.setCursor(0, 0);
-            Ui::display.print(PSTR2("1/4\nTurn off all VTXs."));
+            // PICO FIX: Standard Strings (No PSTR2)
+            Ui::display.print("1/4\nTurn off all VTXs.");
             Ui::display.setCursor(0, (CHAR_HEIGHT + 1) * 2);
-            Ui::display.print(PSTR2("Remove RX antennas."));
+            Ui::display.print("Remove RX antennas.");
 
             Ui::display.setCursor(0, SCREEN_HEIGHT - CHAR_HEIGHT - 1);
-            Ui::display.print(PSTR2("Press MODE when ready."));
+            Ui::display.print("Press MODE when ready.");
         break;
 
         case InternalState::SCANNING_LOW:
             Ui::display.setTextSize(1);
             Ui::display.setCursor(0, 0);
-            Ui::display.print(PSTR2("2/4\nScanning for lowest\nRSSI..."));
+            Ui::display.print("2/4\nScanning for lowest\nRSSI...");
         break;
 
         case InternalState::WAIT_FOR_HIGH:
             Ui::display.setTextSize(1);
             Ui::display.setCursor(0, 0);
-            Ui::display.print(PSTR2("3/4\nTurn on your VTX."));
+            Ui::display.print("3/4\nTurn on your VTX.");
 
             Ui::display.setCursor(0, SCREEN_HEIGHT - CHAR_HEIGHT - 1);
-            Ui::display.print(PSTR2("Press MODE when ready."));
+            Ui::display.print("Press MODE when ready.");
         break;
 
         case InternalState::SCANNING_HIGH:
             Ui::display.setTextSize(1);
             Ui::display.setCursor(0, 0);
-            Ui::display.print(PSTR2("4/4\nScanning for highest\nRSSI..."));
+            Ui::display.print("4/4\nScanning for highest\nRSSI...");
         break;
 
         case InternalState::DONE:
             Ui::display.setTextSize(1);
             Ui::display.setCursor(0, 0);
-            Ui::display.print(PSTR2("All done!"));
+            Ui::display.print("All done!");
 
             Ui::display.setCursor(0, CHAR_HEIGHT * 2);
-            Ui::display.print(PSTR2("Min: "));
+            Ui::display.print("Min: ");
 
             Ui::display.setCursor((CHAR_WIDTH + 1) * 5, CHAR_HEIGHT * 2);
             Ui::display.print(EepromSettings.rssiAMin);
@@ -160,7 +162,7 @@ void StateMachine::SettingsRssiStateHandler::onUpdateDraw() {
             #endif
 
             Ui::display.setCursor(0, CHAR_HEIGHT * 3 + 1);
-            Ui::display.print(PSTR2("Max: "));
+            Ui::display.print("Max: ");
 
             Ui::display.setCursor((CHAR_WIDTH + 1) * 5, CHAR_HEIGHT * 3 + 1);
             Ui::display.print(EepromSettings.rssiAMax);
@@ -171,7 +173,7 @@ void StateMachine::SettingsRssiStateHandler::onUpdateDraw() {
             #endif
 
             Ui::display.setCursor(0, SCREEN_HEIGHT - CHAR_HEIGHT - 1);
-            Ui::display.print(PSTR2("Press MODE to save."));
+            Ui::display.print("Press MODE to save.");
         break;
     }
 

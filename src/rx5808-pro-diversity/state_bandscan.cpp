@@ -1,4 +1,5 @@
-#include <avr/pgmspace.h>
+// PICO PORT: Removed <avr/pgmspace.h>
+#include <Arduino.h>
 
 #include "state_bandscan.h"
 
@@ -39,7 +40,7 @@ void StateMachine::BandScanStateHandler::onUpdate() {
     Ui::needUpdate();
 
     if (orderedChanelIndex == 0) {
-
+        // Scan cycle complete
     }
 }
 

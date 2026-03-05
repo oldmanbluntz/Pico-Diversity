@@ -1,11 +1,14 @@
-#include <avr/pgmspace.h>
+#include <Arduino.h>
+// #include <avr/pgmspace.h> // REMOVED: Not needed for Pico
 
 #include "channels.h"
 #include "settings.h"
 
+// PICO NOTE: Removed PROGMEM. The Pico has plenty of RAM, and 'const' 
+// usually keeps data in Flash/RODATA anyway on ARM.
 
-// Channels to sent to the SPI registers
-static const uint16_t channelTable[] PROGMEM = {
+// Channels to send to the SPI registers
+static const uint16_t channelTable[] = {
     #define _CHANNEL_REG_FLO(f) ((f - 479) / 2)
     #define _CHANNEL_REG_N(f) (_CHANNEL_REG_FLO(f) / 32)
     #define _CHANNEL_REG_A(f) (_CHANNEL_REG_FLO(f) % 32)
@@ -80,7 +83,7 @@ static const uint16_t channelTable[] PROGMEM = {
 };
 
 // Channels with their Mhz Values
-static const uint16_t channelFreqTable[] PROGMEM = {
+static const uint16_t channelFreqTable[] = {
     5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725, // A
     5733, 5752, 5771, 5790, 5809, 5828, 5847, 5866, // B
     5705, 5685, 5665, 5645, 5885, 5905, 5925, 5945, // E
@@ -92,10 +95,8 @@ static const uint16_t channelFreqTable[] PROGMEM = {
 #endif
 };
 
-// Encode channel names as an 8-bit value where:
-//      0b00000111 = channel number (zero-indexed)
-//      0b11111000 = channel letter (offset from 'A' character)
-static const uint8_t channelNames[] PROGMEM = {
+// Encode channel names as an 8-bit value
+static const uint8_t channelNames[] = {
     #define _CHANNEL_NAMES(l) (uint8_t) ((l - 65) << 3)
     #define CHANNEL_NAMES(l) \
         _CHANNEL_NAMES(l) | 0, \
@@ -123,209 +124,55 @@ static const uint8_t channelNames[] PROGMEM = {
 };
 
 // All Channels of the above List ordered by Mhz
-static const uint8_t channelFreqOrderedIndex[] PROGMEM = {
+static const uint8_t channelFreqOrderedIndex[] = {
     #ifdef USE_LBAND
-        40, // 5362
-        41, // 5399
-        42, // 5436
-        43, // 5473
-        44, // 5510
-        45, // 5547
-        46, // 5584
-        47, // 5621
-        19, // 5645
-        32, // 5658
-        18, // 5665
-        17, // 5685
-        33, // 5695
-        16, // 5705
-         7, // 5725
-        34, // 5732
-         8, // 5733
-        24, // 5740
-         6, // 5745
-         9, // 5752
-        25, // 5760
-         5, // 5765
-        35, // 5769
-        10, // 5771
-        26, // 5780
-         4, // 5785
-        11, // 5790
-        27, // 5800
-         3, // 5805
-        36, // 5806
-        12, // 5809
-        28, // 5820
-         2, // 5825
-        13, // 5828
-        29, // 5840
-        37, // 5843
-         1, // 5845
-        14, // 5847
-        30, // 5860
-         0, // 5865
-        15, // 5866
-        31, // 5880
-        38, // 5880
-        20, // 5885
-        21, // 5905
-        39, // 5917
-        22, // 5925
-        23  // 5945
+        40, 41, 42, 43, 44, 45, 46, 47, // L-Band 
+        19, 32, 18, 17, 33, 16,  7, 34, 
+         8, 24,  6,  9, 25,  5, 35, 10, 
+        26,  4, 11, 27,  3, 36, 12, 28, 
+         2, 13, 29, 37,  1, 14, 30,  0, 
+        15, 31, 38, 20, 21, 39, 22, 23
     #else
-        19, //5645
-        32, //5658
-        18, //5665
-        17, //5685
-        33, //5695
-        16, //5705
-         7, //5725
-        34, //5732
-         8, //5733
-        24, //5740
-         6, //5745
-         9, //5752
-        25, //5760
-         5, //5765
-        35, //5769
-        10, //5771
-        26, //5780
-         4, //5785
-        11, //5790
-        27, //5800
-         3, //5805
-        36, //5806
-        12, //5809
-        28, //5820
-         2, //5825
-        13, //5828
-        29, //5840
-        37, //5843
-         1, //5845
-        14, //5847
-        30, //5860
-         0, //5865
-        15, //5866
-        31, //5880
-        38, //5880
-        20, //5885
-        21, //5905
-        39, //5917
-        22, //5925
-        23, //5945
+        19, 32, 18, 17, 33, 16,  7, 34,
+         8, 24,  6,  9, 25,  5, 35, 10,
+        26,  4, 11, 27,  3, 36, 12, 28,
+         2, 13, 29, 37,  1, 14, 30,  0,
+        15, 31, 38, 20, 21, 39, 22, 23
     #endif
 };
 
-static const uint8_t channelIndexToOrderedIndex[] PROGMEM = {
+static const uint8_t channelIndexToOrderedIndex[] = {
     #ifdef USE_LBAND
-        39,
-        36,
-        32,
-        28,
-        25,
-        21,
-        18,
-        14,
-        16,
-        19,
-        23,
-        26,
-        30,
-        33,
-        37,
-        40,
-        13,
-        11,
-        10,
-         8,
-        43,
-        44,
-        46,
-        47,
-        17,
-        20,
-        24,
-        27,
-        31,
-        34,
-        38,
-        41,
-         9,
-        12,
-        15,
-        22,
-        29,
-        35,
-        42,
-        45,
-         0,
-         1,
-         2,
-         3,
-         4,
-         5,
-         6,
-         7
+        39, 36, 32, 28, 25, 21, 18, 14,
+        16, 19, 23, 26, 30, 33, 37, 40,
+        13, 11, 10,  8, 43, 44, 46, 47,
+        17, 20, 24, 27, 31, 34, 38, 41,
+         9, 12, 15, 22, 29, 35, 42, 45,
+         0,  1,  2,  3,  4,  5,  6,  7
     #else
-        31,
-        28,
-        24,
-        20,
-        17,
-        13,
-        10,
-         6,
-         8,
-        11,
-        15,
-        18,
-        22,
-        25,
-        29,
-        32,
-         5,
-         3,
-         2,
-         0,
-        35,
-        36,
-        38,
-        39,
-         9,
-        12,
-        16,
-        19,
-        23,
-        26,
-        30,
-        33,
-         1,
-         4,
-         7,
-        14,
-        21,
-        27,
-        34,
-        37
+        31, 28, 24, 20, 17, 13, 10,  6,
+         8, 11, 15, 18, 22, 25, 29, 32,
+         5,  3,  2,  0, 35, 36, 38, 39,
+         9, 12, 16, 19, 23, 26, 30, 33,
+         1,  4,  7, 14, 21, 27, 34, 37
     #endif
 };
-
 
 namespace Channels {
     const uint16_t getSynthRegisterB(uint8_t index) {
-        return pgm_read_word_near(channelTable + index);
+        // PICO FIX: Direct array access instead of pgm_read_word
+        return channelTable[index];
     }
 
     const uint16_t getFrequency(uint8_t index) {
-        return pgm_read_word_near(channelFreqTable + index);
+        return channelFreqTable[index];
     }
 
     // Returns channel name as a string.
     //      dest[] must be at least 3-bytes.
     char nameBuffer[3];
     const char *getName(uint8_t index) {
-        uint8_t encodedName = pgm_read_byte_near(channelNames + index);
+        uint8_t encodedName = channelNames[index];
 
         nameBuffer[0] = 65 + (encodedName >> 3);
         nameBuffer[1] = 48 + (encodedName & (255 >> (8 - 3))) + 1;
@@ -335,10 +182,10 @@ namespace Channels {
     }
 
     const uint8_t getOrderedIndex(uint8_t index) {
-        return pgm_read_byte_near(channelFreqOrderedIndex + index);
+        return channelFreqOrderedIndex[index];
     }
 
     const uint8_t getOrderedIndexFromIndex(uint8_t index) {
-        return pgm_read_byte_near(channelIndexToOrderedIndex + index);
+        return channelIndexToOrderedIndex[index];
     }
 }
