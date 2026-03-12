@@ -80,14 +80,14 @@ void StateMenuHelper::draw() {
         0,
         MENU_W,
         MENU_H,
-        BLACK
+        TFT_BLACK
     );
 
     display.drawFastVLine(
         MENU_X - 1,
         0,
         MENU_H,
-        WHITE
+        TFT_WHITE
     );
 
     const uint8_t yOffset =
@@ -100,7 +100,7 @@ void StateMenuHelper::draw() {
                 MENU_ITEM_H * i + yOffset,
                 MENU_ITEM_W,
                 MENU_ITEM_H,
-                WHITE
+                TFT_WHITE
             );
         }
 
@@ -110,7 +110,7 @@ void StateMenuHelper::draw() {
             this->menuItems[i].icon(this->state),
             MENU_ITEM_W,
             MENU_ITEM_H,
-            this->selectedItem == i ? BLACK : WHITE
+            this->selectedItem == i ? TFT_BLACK : TFT_WHITE
         );
     }
 }

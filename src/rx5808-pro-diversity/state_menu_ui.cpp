@@ -48,7 +48,7 @@ void StateMachine::MenuStateHandler::drawMenuEntry() {
     const uint8_t charLen = strlen(item->text);
 
     Ui::display.setTextSize(2);
-    Ui::display.setTextColor(WHITE);
+    Ui::display.setTextColor(TFT_WHITE);
     Ui::display.setCursor(
         SCREEN_WIDTH_MID - (charLen * ((CHAR_WIDTH + 1) * 2)) / 2,
         TEXT_Y
@@ -69,7 +69,7 @@ void StateMachine::MenuStateHandler::drawMenuEntry() {
             item->icon,
             GRAPHIC_SIZE,
             GRAPHIC_SIZE,
-            WHITE
+            TFT_WHITE
         );
     }
 }
@@ -85,7 +85,7 @@ static void drawTriangles() {
         SCREEN_WIDTH - 1,
         SCREEN_HEIGHT_MID + TRIANGLE_MARGIN,
 
-        WHITE
+        TFT_WHITE
     );
 
     Ui::display.fillTriangle(
@@ -98,6 +98,6 @@ static void drawTriangles() {
         SCREEN_WIDTH - 1,
         SCREEN_HEIGHT_MID - TRIANGLE_MARGIN,
 
-        WHITE
+        TFT_WHITE
     );
 }

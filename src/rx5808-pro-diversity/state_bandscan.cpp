@@ -86,53 +86,53 @@ void StateMachine::BandScanStateHandler::onInitialDraw() {
         BORDER_LEFT_X,
         BORDER_LEFT_Y,
         BORDER_LEFT_H,
-        WHITE
+        TFT_WHITE
     );
 
     Ui::display.drawFastVLine(
         BORDER_RIGHT_X,
         BORDER_RIGHT_Y,
         BORDER_RIGHT_H,
-        WHITE
+        TFT_WHITE
     );
 
     Ui::display.drawFastHLine(
         BORDER_BOTTOM_X,
         BORDER_BOTTOM_Y,
         BORDER_BOTTOM_W,
-        WHITE
+        TFT_WHITE
     );
 
     Ui::display.drawFastHLine(
         BORDER_PROGRESS_LEFT_X,
         SCREEN_HEIGHT - 1,
         BORDER_PROGRESS_RIGHT_X - BORDER_PROGRESS_LEFT_X,
-        WHITE
+        TFT_WHITE
     );
 
     Ui::display.drawFastVLine(
         BORDER_PROGRESS_LEFT_X,
         BORDER_PROGRESS_Y,
         BORDER_PROGRESS_H,
-        WHITE
+        TFT_WHITE
     );
 
     Ui::display.drawFastVLine(
         BORDER_PROGRESS_RIGHT_X,
         BORDER_PROGRESS_Y,
         BORDER_PROGRESS_H,
-        WHITE
+        TFT_WHITE
     );
 
     Ui::display.setTextSize(1);
-    Ui::display.setTextColor(WHITE);
+    Ui::display.setTextColor(TFT_WHITE);
     Ui::display.setCursor(CHANNEL_TEXT_LOW_X, CHANNEL_TEXT_LOW_Y);
     Ui::display.print(Channels::getFrequency(Channels::getOrderedIndex(0)));
 
     Ui::display.setCursor(CHANNEL_TEXT_HIGH_X, CHANNEL_TEXT_HIGH_Y);
     Ui::display.print(
         Channels::getFrequency(Channels::getOrderedIndex(CHANNELS_SIZE - 1)));
-
+    Ui::drawStatusBar();
     Ui::needDisplay();
 }
 
@@ -151,7 +151,7 @@ void StateMachine::BandScanStateHandler::onUpdateDraw() {
         BORDER_BOTTOM_X,
         BORDER_BOTTOM_Y,
         BORDER_BOTTOM_W,
-        WHITE
+        TFT_WHITE
     );
 
     Ui::clearRect(
@@ -167,8 +167,8 @@ void StateMachine::BandScanStateHandler::onUpdateDraw() {
         PROGRESS_Y,
         progressW,
         PROGRESS_H,
-        WHITE
+        TFT_WHITE
     );
-
+    Ui::drawStatusBar();
     Ui::needDisplay();
 }

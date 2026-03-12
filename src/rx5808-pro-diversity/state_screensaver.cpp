@@ -111,10 +111,10 @@ void StateMachine::ScreensaverStateHandler::onInitialDraw() {
             logo,
             SCREEN_WIDTH,
             SCREEN_HEIGHT,
-            WHITE
+            TFT_WHITE
         );
     } else {
-        Ui::display.setTextColor(WHITE);
+        Ui::display.setTextColor(TFT_WHITE);
 
         Ui::display.setTextSize(6);
         Ui::display.setCursor(
@@ -129,7 +129,7 @@ void StateMachine::ScreensaverStateHandler::onInitialDraw() {
             SCREEN_HEIGHT - CHAR_HEIGHT * 2 - 2);
         Ui::display.print(Channels::getFrequency(Receiver::activeChannel));
     }
-
+    Ui::drawStatusBar();
     Ui::needDisplay();
 }
 

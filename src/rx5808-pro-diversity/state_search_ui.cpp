@@ -105,7 +105,7 @@ void StateMachine::SearchStateHandler::drawBorders() {
         SCANBAR_BORDER_W,
         SCANBAR_BORDER_H,
         2,
-        WHITE
+        TFT_WHITE
     );
 
     Ui::drawDashedVLine(
@@ -118,7 +118,7 @@ void StateMachine::SearchStateHandler::drawBorders() {
 
 void StateMachine::SearchStateHandler::drawChannelText() {
     display.setTextSize(CHANNEL_TEXT_SIZE);
-    display.setTextColor(WHITE);
+    display.setTextColor(TFT_WHITE);
     display.setCursor(CHANNEL_TEXT_X, CHANENL_TEXT_Y);
 
     display.print(Channels::getName(Receiver::activeChannel));
@@ -126,7 +126,7 @@ void StateMachine::SearchStateHandler::drawChannelText() {
 
 void StateMachine::SearchStateHandler::drawFrequencyText() {
     display.setTextSize(FREQUENCY_TEXT_SIZE);
-    display.setTextColor(WHITE);
+    display.setTextColor(TFT_WHITE);
     display.setCursor(FREQUENCY_TEXT_X, FREQUENCY_TEXT_Y);
 
     display.print(Channels::getFrequency(Receiver::activeChannel));
@@ -140,7 +140,7 @@ void StateMachine::SearchStateHandler::drawScanBar() {
         SCANBAR_Y,
         scanWidth,
         SCANBAR_H,
-        WHITE
+        TFT_WHITE
     );
 }
 
@@ -174,7 +174,7 @@ void StateMachine::SearchStateHandler::drawRssiGraph() {
         );
 
         display.setTextSize(RX_TEXT_SIZE);
-        display.setTextColor(INVERSE);
+        display.setTextColor(TFT_WHITE);
 
         display.setCursor(RX_TEXT_X, RX_TEXT_A_Y);
         // PICO FIX: Standard string, no PSTR2 wrapper

@@ -2,17 +2,18 @@
 #define UI_H
 
 
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+//#include <Wire.h>
+//#include <Adafruit_GFX.h>
+//#include <Adafruit_SSD1306.h>
+#include <TFT_eSPI.h>
 #include <stdint.h>
 
 #include "settings.h"
 #include "settings_internal.h"
 
 
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
 
 #define SCREEN_WIDTH_MID ((SCREEN_WIDTH / 2) - 1)
 #define SCREEN_HEIGHT_MID ((SCREEN_HEIGHT / 2) - 1)
@@ -23,7 +24,8 @@
 
 namespace Ui {
     // OLED_CLASS is defined in settings.h (usually Adafruit_SSD1306)
-    extern OLED_CLASS display;
+    //extern OLED_CLASS display;
+    extern TFT_eSPI display;
     
     extern bool shouldDrawUpdate;
     extern bool shouldDisplay;
@@ -41,6 +43,8 @@ namespace Ui {
         const uint8_t w,
         const uint8_t h
     );
+
+    void drawStatusBar();
 
     void drawDashedHLine(const int x, const int y, const int w, const int step);
     void drawDashedVLine(const int x, const int y, const int w, const int step);

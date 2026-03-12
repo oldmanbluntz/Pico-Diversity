@@ -1,44 +1,57 @@
 #include <stdint.h>
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-// #include <avr/pgmspace.h> // PICO FIX: Removed AVR specific header
+#include <TFT_eSPI.h>
 
 #include "settings.h"
 #include "settings_internal.h"
 #include "ui.h"
-
+#include "receiver.h"
 
 namespace Ui {
-    OLED_CLASS display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+    // Initialize the TFT_eSPI object
+    TFT_eSPI display = TFT_eSPI();
+    
     bool shouldDrawUpdate = false;
     bool shouldDisplay = false;
     bool shouldFullRedraw = false;
 
-
     void setup() {
-        // PICO NOTE: Ensure I2C is started. 
-        // If your OLED is on specific pins (not default GP4/GP5), 
-        // you may need Wire.setSDA(pin) and Wire.setSCL(pin) before this.
-        Wire.begin(); 
+        display.init();
+        display.setRotation(3); // Set to 1 or 3 for landscape depending on your board mount
 
-        display.begin(OLED_VCCSTATE, OLED_ADDRESS);
-
-        display.setTextColor(WHITE);
+        // TFT_eSPI text background rendering
+        display.setTextColor(TFT_WHITE, TFT_BLACK); 
         display.setTextSize(1);
         display.setTextWrap(false);
 
-        display.clearDisplay();
-        display.display(); // Force an initial clear
+        display.fillScreen(TFT_BLACK); 
     }
 
     void update() {
         if (shouldDisplay) {
-            display.display();
+            // TFT_eSPI draws directly to the screen by default.
+            // No display.display() buffer push is required here.
             shouldDisplay = false;
         }
     }
 
+    void drawStatusBar() {
+        // Position it in the top right corner
+        const int startX = SCREEN_WIDTH - 30;
+        const int startY = 2;
+
+        // Draw a small black background box to erase any old text
+        display.fillRect(startX, startY, 28, 10, TFT_BLACK);
+        
+        display.setTextSize(1);
+        display.setTextColor(TFT_WHITE, TFT_BLACK);
+        display.setCursor(startX, startY);
+
+        if (Receiver::activeReceiver == Receiver::ReceiverId::A) {
+            display.print("RX:A");
+        } else {
+            display.print("RX:B");
+        }
+    }
 
     void drawGraph(
         const uint8_t data[],
@@ -64,8 +77,6 @@ namespace Ui {
             const uint8_t dataPoint = CLAMP_DATAPOINT(data[i]);
             const uint8_t dataPointNext = CLAMP_DATAPOINT(data[i + 1]);
 
-            // Need to invert the heights so it shows the right way on the
-            // screen.
             const uint8_t dataPointHeight = h - SCALE_DATAPOINT(dataPoint);
             const uint8_t dataPointNextHeight =
                 h - SCALE_DATAPOINT(dataPointNext);
@@ -78,7 +89,7 @@ namespace Ui {
                 y + dataPointHeight,
                 xEnd,
                 y + dataPointNextHeight,
-                WHITE
+                TFT_WHITE
             );
 
             xNext = xEnd;
@@ -88,7 +99,6 @@ namespace Ui {
         #undef CLAMP_DATAPOINT
     }
 
-
     void drawDashedHLine(
         const int x,
         const int y,
@@ -96,7 +106,7 @@ namespace Ui {
         const int step
     ) {
         for (int i = 0; i <= w; i += step) {
-            Ui::display.drawFastHLine(x + i, y, step / 2, WHITE);
+            Ui::display.drawFastHLine(x + i, y, step / 2, TFT_WHITE);
         }
     }
 
@@ -107,18 +117,18 @@ namespace Ui {
         const int step
     ) {
         for (int i = 0; i <= h; i += step) {
-            Ui::display.drawFastVLine(x, y + i, step / 2, INVERSE);
+            // Replaced INVERSE with TFT_LIGHTGREY
+            Ui::display.drawFastVLine(x, y + i, step / 2, TFT_LIGHTGREY); 
         }
     }
 
     void clear() {
-        display.clearDisplay();
+        display.fillScreen(TFT_BLACK);
     }
 
     void clearRect(const int x, const int y, const int w, const int h) {
-        display.fillRect(x, y, w, h, BLACK);
+        display.fillRect(x, y, w, h, TFT_BLACK);
     }
-
 
     void needUpdate() {
         shouldDrawUpdate = true;
