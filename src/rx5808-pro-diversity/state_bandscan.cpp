@@ -132,7 +132,6 @@ void StateMachine::BandScanStateHandler::onInitialDraw() {
     Ui::display.setCursor(CHANNEL_TEXT_HIGH_X, CHANNEL_TEXT_HIGH_Y);
     Ui::display.print(
         Channels::getFrequency(Channels::getOrderedIndex(CHANNELS_SIZE - 1)));
-    Ui::drawStatusBar();
     Ui::needDisplay();
 }
 
@@ -161,7 +160,7 @@ void StateMachine::BandScanStateHandler::onUpdateDraw() {
         PROGRESS_H
     );
 
-    uint8_t progressW = orderedChanelIndex * PROGRESS_W / CHANNELS_SIZE + 1;
+    uint16_t progressW = orderedChanelIndex * PROGRESS_W / CHANNELS_SIZE + 1;
     Ui::display.fillRect(
         PROGRESS_X,
         PROGRESS_Y,
@@ -169,6 +168,6 @@ void StateMachine::BandScanStateHandler::onUpdateDraw() {
         PROGRESS_H,
         TFT_WHITE
     );
-    Ui::drawStatusBar();
+
     Ui::needDisplay();
 }

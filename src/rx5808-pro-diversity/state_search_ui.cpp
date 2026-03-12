@@ -68,33 +68,32 @@ void StateMachine::SearchStateHandler::onInitialDraw() {
 }
 
 void StateMachine::SearchStateHandler::onUpdateDraw() {
-    Ui::clearRect(
-        0,
-        0,
-        BORDER_GRAPH_L_X,
-        CHANNEL_TEXT_H
-    );
+//    Ui::clearRect(
+//        0,
+//        0,
+//        BORDER_GRAPH_L_X,
+//        CHANNEL_TEXT_H
+//    );
 
-    Ui::clearRect(
-        0,
-        FREQUENCY_TEXT_Y,
-        BORDER_GRAPH_L_X,
-        CHAR_HEIGHT * 2
-    );
+//   Ui::clearRect(
+//        0,
+//        FREQUENCY_TEXT_Y,
+//        BORDER_GRAPH_L_X,
+//        CHAR_HEIGHT * 2
+//    );
 
-    Ui::clearRect(
-        SCANBAR_X,
-        SCANBAR_Y,
-        SCANBAR_W,
-        SCANBAR_H
-    );
+//    Ui::clearRect(
+//        SCANBAR_X,
+//        SCANBAR_Y,
+//        SCANBAR_W,
+//        SCANBAR_H
+//    );
 
     drawChannelText();
     drawFrequencyText();
     drawScanBar();
     drawRssiGraph();
     menu.draw();
-
     Ui::needDisplay();
 }
 
@@ -118,7 +117,7 @@ void StateMachine::SearchStateHandler::drawBorders() {
 
 void StateMachine::SearchStateHandler::drawChannelText() {
     display.setTextSize(CHANNEL_TEXT_SIZE);
-    display.setTextColor(TFT_WHITE);
+    display.setTextColor(TFT_WHITE, TFT_BLACK);
     display.setCursor(CHANNEL_TEXT_X, CHANENL_TEXT_Y);
 
     display.print(Channels::getName(Receiver::activeChannel));
@@ -126,22 +125,22 @@ void StateMachine::SearchStateHandler::drawChannelText() {
 
 void StateMachine::SearchStateHandler::drawFrequencyText() {
     display.setTextSize(FREQUENCY_TEXT_SIZE);
-    display.setTextColor(TFT_WHITE);
+    display.setTextColor(TFT_WHITE, TFT_BLACK);
     display.setCursor(FREQUENCY_TEXT_X, FREQUENCY_TEXT_Y);
 
     display.print(Channels::getFrequency(Receiver::activeChannel));
 }
 
 void StateMachine::SearchStateHandler::drawScanBar() {
-    uint8_t scanWidth = orderedChanelIndex * SCANBAR_W / CHANNELS_SIZE;
+    uint16_t scanWidth = orderedChanelIndex * SCANBAR_W / CHANNELS_SIZE;
 
-    display.fillRect(
-        SCANBAR_X,
-        SCANBAR_Y,
-        scanWidth,
-        SCANBAR_H,
-        TFT_WHITE
-    );
+    // 1. Draw the white progress bar
+    display.fillRect(SCANBAR_X, SCANBAR_Y, scanWidth, SCANBAR_H, TFT_WHITE);
+    
+    // 2. Erase ONLY the empty space to the right of the progress bar (Stops the flashing!)
+    if (scanWidth < SCANBAR_W) {
+        display.fillRect(SCANBAR_X + scanWidth, SCANBAR_Y, SCANBAR_W - scanWidth, SCANBAR_H, TFT_BLACK);
+    }
 }
 
 void StateMachine::SearchStateHandler::drawRssiGraph() {
@@ -174,7 +173,7 @@ void StateMachine::SearchStateHandler::drawRssiGraph() {
         );
 
         display.setTextSize(RX_TEXT_SIZE);
-        display.setTextColor(TFT_WHITE);
+        display.setTextColor(TFT_WHITE, TFT_BLACK);
 
         display.setCursor(RX_TEXT_X, RX_TEXT_A_Y);
         // PICO FIX: Standard string, no PSTR2 wrapper

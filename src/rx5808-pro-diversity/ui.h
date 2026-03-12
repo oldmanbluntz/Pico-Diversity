@@ -12,8 +12,8 @@
 #include "settings_internal.h"
 
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 240
+#define SCREEN_WIDTH 160
+#define SCREEN_HEIGHT 80
 
 #define SCREEN_WIDTH_MID ((SCREEN_WIDTH / 2) - 1)
 #define SCREEN_HEIGHT_MID ((SCREEN_HEIGHT / 2) - 1)
@@ -38,10 +38,10 @@ namespace Ui {
         const uint8_t data[],
         const uint8_t dataSize,
         const uint8_t dataScale,
-        const uint8_t x,
-        const uint8_t y,
-        const uint8_t w,
-        const uint8_t h
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h
     );
 
     void drawStatusBar();

@@ -38,12 +38,12 @@ namespace Ui {
         // Position it in the top right corner
         const int startX = SCREEN_WIDTH - 30;
         const int startY = 2;
-
-        // Draw a small black background box to erase any old text
-        display.fillRect(startX, startY, 28, 10, TFT_BLACK);
         
         display.setTextSize(1);
-        display.setTextColor(TFT_WHITE, TFT_BLACK);
+
+        // The second parameter (TFT_BLACK) acts as a flicker-free eraser!
+        // It overwrites the graph lines behind the text cleanly in one pass.
+        display.setTextColor(TFT_WHITE, TFT_BLACK); 
         display.setCursor(startX, startY);
 
         if (Receiver::activeReceiver == Receiver::ReceiverId::A) {
@@ -57,34 +57,36 @@ namespace Ui {
         const uint8_t data[],
         const uint8_t dataSize,
         const uint8_t dataScale,
-        const uint8_t x,
-        const uint8_t y,
-        const uint8_t w,
-        const uint8_t h
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h
     ) {
         #define SCALE_DATAPOINT(p) (p * h / dataScale)
         #define CLAMP_DATAPOINT(p) \
             (p > dataScale) ? dataScale : ((p < 0) ? 0 : p);
 
-        Ui::clearRect(x, y, w - 1, h + 1);
+        // Hard erase the graph background cleanly to prevent stacking/artifacts
+        display.fillRect(x, y, w, h + 1, TFT_BLACK);
 
-        const uint8_t xScaler = w / (dataSize - 1);
-        const uint8_t xScalarMissing = w - (xScaler * (dataSize - 1));
+        // Original rx5808-pro line math
+        const uint16_t xScaler = w / (dataSize - 1);
+        const uint16_t xScalarMissing = w - (xScaler * (dataSize - 1));
 
-        uint8_t xNext = x;
+        uint16_t xNext = x;
 
-        for (uint8_t i = 0; i < dataSize - 1; i++) {
-            const uint8_t dataPoint = CLAMP_DATAPOINT(data[i]);
-            const uint8_t dataPointNext = CLAMP_DATAPOINT(data[i + 1]);
+        for (uint16_t i = 0; i < dataSize - 1; i++) {
+            const uint16_t dataPoint = CLAMP_DATAPOINT(data[i]);
+            const uint16_t dataPointNext = CLAMP_DATAPOINT(data[i + 1]);
 
-            const uint8_t dataPointHeight = h - SCALE_DATAPOINT(dataPoint);
-            const uint8_t dataPointNextHeight =
-                h - SCALE_DATAPOINT(dataPointNext);
+            const uint16_t dataPointHeight = h - SCALE_DATAPOINT(dataPoint);
+            const uint16_t dataPointNextHeight = h - SCALE_DATAPOINT(dataPointNext);
 
-            const uint8_t xEnd = xNext + xScaler
+            const uint16_t xEnd = xNext + xScaler
                     + (i == 0 || i == dataSize - 2 ? (xScalarMissing + 1) / 2 : 0);
 
-            Ui::display.drawLine(
+            // Connect the dots to form the continuous line
+            display.drawLine(
                 xNext,
                 y + dataPointHeight,
                 xEnd,

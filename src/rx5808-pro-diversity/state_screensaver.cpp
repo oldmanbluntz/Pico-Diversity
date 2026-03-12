@@ -129,7 +129,6 @@ void StateMachine::ScreensaverStateHandler::onInitialDraw() {
             SCREEN_HEIGHT - CHAR_HEIGHT * 2 - 2);
         Ui::display.print(Channels::getFrequency(Receiver::activeChannel));
     }
-    Ui::drawStatusBar();
     Ui::needDisplay();
 }
 
