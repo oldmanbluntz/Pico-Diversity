@@ -44,6 +44,17 @@ namespace Ui {
         const uint16_t h
     );
 
+    void drawDiversityGraph(
+        const uint8_t dataA[],
+        const uint8_t dataB[],
+        const uint8_t dataSize,
+        const uint8_t dataScale,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h
+    );
+
     void drawStatusBar();
 
     void drawDashedHLine(const int x, const int y, const int w, const int step);

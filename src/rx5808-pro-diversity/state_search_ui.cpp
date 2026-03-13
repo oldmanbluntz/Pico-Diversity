@@ -6,7 +6,7 @@
 // #include "pstr_helper.h" // PICO FIX: Not needed.
 
 
-#define BORDER_GRAPH_L_X 59
+#define BORDER_GRAPH_L_X 60
 
 #define CHANNEL_TEXT_SIZE 5
 #define CHANNEL_TEXT_X 0
@@ -28,28 +28,31 @@
 #define SCANBAR_W (SCANBAR_BORDER_W - 4)
 #define SCANBAR_H (SCANBAR_BORDER_H - 4)
 
-#define GRAPH_SEPERATOR_Y SCREEN_HEIGHT_MID
-#define GRAPH_SEPERATOR_W (SCREEN_WIDTH - BORDER_GRAPH_L_X)
+//#define GRAPH_SEPERATOR_Y SCREEN_HEIGHT_MID
+//#define GRAPH_SEPERATOR_W (SCREEN_WIDTH - BORDER_GRAPH_L_X)
 #define GRAPH_SEPERATOR_STEP 3
 
+//#define GRAPH_X (BORDER_GRAPH_L_X + 2)
+//#define GRAPH_W (SCREEN_WIDTH - BORDER_GRAPH_L_X)
+//#ifdef USE_DIVERSITY
+//    #define GRAPH_H (GRAPH_SEPERATOR_Y - 2)
+//    #define GRAPH_A_Y 0
+//    #define GRAPH_B_Y (SCREEN_HEIGHT - GRAPH_H - 1)
+//
+//    #define RX_TEXT_SIZE 1
+//    #define RX_TEXT_X (BORDER_GRAPH_L_X + 4)
+//    #define RX_TEXT_H (CHAR_HEIGHT * RX_TEXT_SIZE)
+//    #define RX_TEXT_A_Y ((GRAPH_A_Y + GRAPH_H / 2) - (RX_TEXT_H / 2))
+//    #define RX_TEXT_B_Y ((GRAPH_B_Y + GRAPH_H / 2) - (RX_TEXT_H / 2))
+//#else
+//    #define GRAPH_H (SCREEN_HEIGHT - 1)
+//    #define GRAPH_Y 0
+//    #define GRAPH_B_Y 0
+//#endif
 #define GRAPH_X (BORDER_GRAPH_L_X + 2)
 #define GRAPH_W (SCREEN_WIDTH - BORDER_GRAPH_L_X)
-#ifdef USE_DIVERSITY
-    #define GRAPH_H (GRAPH_SEPERATOR_Y - 2)
-    #define GRAPH_A_Y 0
-    #define GRAPH_B_Y (SCREEN_HEIGHT - GRAPH_H - 1)
-
-    #define RX_TEXT_SIZE 1
-    #define RX_TEXT_X (BORDER_GRAPH_L_X + 4)
-    #define RX_TEXT_H (CHAR_HEIGHT * RX_TEXT_SIZE)
-    #define RX_TEXT_A_Y ((GRAPH_A_Y + GRAPH_H / 2) - (RX_TEXT_H / 2))
-    #define RX_TEXT_B_Y ((GRAPH_B_Y + GRAPH_H / 2) - (RX_TEXT_H / 2))
-#else
-    #define GRAPH_H (SCREEN_HEIGHT - 1)
-    #define GRAPH_Y 0
-    #define GRAPH_B_Y 0
-#endif
-
+#define GRAPH_H (SCREEN_HEIGHT)
+#define GRAPH_Y 0
 
 using Ui::display;
 
@@ -145,43 +148,29 @@ void StateMachine::SearchStateHandler::drawScanBar() {
 
 void StateMachine::SearchStateHandler::drawRssiGraph() {
     #ifdef USE_DIVERSITY
-        Ui::drawGraph(
+        // 1. Draw the new unified overlapping graph using the full height
+        Ui::drawDiversityGraph(
+            Receiver::rssiALast,
             Receiver::rssiBLast,
             RECEIVER_LAST_DATA_SIZE,
             100,
             GRAPH_X,
-            GRAPH_A_Y,
+            GRAPH_Y,
             GRAPH_W,
             GRAPH_H
         );
 
-        Ui::drawGraph(
-            Receiver::rssiALast,
-            RECEIVER_LAST_DATA_SIZE,
-            100,
-            GRAPH_X,
-            GRAPH_B_Y,
-            GRAPH_W,
-            GRAPH_H
-        );
-
-        Ui::drawDashedHLine(
-            GRAPH_X,
-            GRAPH_SEPERATOR_Y,
-            GRAPH_SEPERATOR_W,
-            GRAPH_SEPERATOR_STEP
-        );
-
-        display.setTextSize(RX_TEXT_SIZE);
-        display.setTextColor(TFT_WHITE, TFT_BLACK);
-
-        display.setCursor(RX_TEXT_X, RX_TEXT_A_Y);
-        // PICO FIX: Standard string, no PSTR2 wrapper
-        display.print("B"); 
-
-        display.setCursor(RX_TEXT_X, RX_TEXT_B_Y);
-        // PICO FIX: Standard string, no PSTR2 wrapper
+        // 2. Overlay a tiny legend directly on top of the graph in the corner
+       display.setTextSize(1);
+        
+        display.setCursor(GRAPH_X + 2, GRAPH_Y + 2);
+        display.setTextColor(TFT_YELLOW, TFT_BLACK); // RX A = Yellow
         display.print("A");
+
+        display.setCursor(GRAPH_X + 2, GRAPH_Y + 12);
+        display.setTextColor(TFT_CYAN, TFT_BLACK);   // RX B = Cyan
+        display.print("B");
+
     #else
         Ui::drawGraph(
             Receiver::rssiALast,
