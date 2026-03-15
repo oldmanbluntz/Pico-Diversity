@@ -87,13 +87,24 @@ namespace Ui {
             firstDiversityDraw = false;
         }
 
-        // 1. ERASE the old lines
+        // 1. ERASE the old lines (Now mirroring the pixel-by-pixel bypass to prevent dotted residues)
         for (uint16_t i = 0; i < dataSize - 1; i++) {
             uint16_t x1 = map(i, 0, dataSize - 2, x, x + w - 1);
             uint16_t x2 = map(i + 1, 0, dataSize - 2, x, x + w - 1);
             
-            display.drawLine(x1, last_yA[i], x2, last_yA[i + 1], TFT_BLACK);
-            display.drawLine(x1, last_yB[i], x2, last_yB[i + 1], TFT_BLACK);
+            // Erase RX A
+            if (last_yA[i] == last_yA[i + 1]) {
+                for (int px = x1; px <= x2; px++) display.drawPixel(px, last_yA[i], TFT_BLACK);
+            } else {
+                display.drawLine(x1, last_yA[i], x2, last_yA[i + 1], TFT_BLACK);
+            }
+
+            // Erase RX B
+            if (last_yB[i] == last_yB[i + 1]) {
+                for (int px = x1; px <= x2; px++) display.drawPixel(px, last_yB[i], TFT_BLACK);
+            } else {
+                display.drawLine(x1, last_yB[i], x2, last_yB[i + 1], TFT_BLACK);
+            }
         }
 
         // 2. DRAW the new lines using the FROZEN snapshot data
@@ -111,9 +122,20 @@ namespace Ui {
             uint16_t x1 = map(i, 0, dataSize - 2, x, x + w - 1);
             uint16_t x2 = map(i + 1, 0, dataSize - 2, x, x + w - 1);
 
-            // Using Yellow and Cyan to fix the red overlap 
-            display.drawLine(x1, yA1, x2, yA2, TFT_YELLOW);
-            display.drawLine(x1, yB1, x2, yB2, TFT_CYAN);
+            // --- THE FLAT LINE BYPASS ---
+            // Draw RX A (Red)
+            if (yA1 == yA2) {
+                for (int px = x1; px <= x2; px++) display.drawPixel(px, yA1, TFT_RED);
+            } else {
+                display.drawLine(x1, yA1, x2, yA2, TFT_RED);
+            }
+
+            // Draw RX B (Cyan)
+            if (yB1 == yB2) {
+                for (int px = x1; px <= x2; px++) display.drawPixel(px, yB1, TFT_CYAN);
+            } else {
+                display.drawLine(x1, yB1, x2, yB2, TFT_CYAN);
+            }
 
             // Memorize coordinates for the next erasure
             last_yA[i] = yA1;
@@ -124,7 +146,6 @@ namespace Ui {
             }
         }
     }
-    
     void drawGraph(
         const uint8_t data[],
         const uint8_t dataSize,

@@ -136,10 +136,11 @@ void StateMachine::BandScanStateHandler::onInitialDraw() {
 }
 
 void StateMachine::BandScanStateHandler::onUpdateDraw() {
-    Ui::drawGraph(
-        rssiData,
-        CHANNELS_SIZE,
-        100,
+    Ui::drawDiversityGraph(
+        rssiData,       // Pass as RX A
+        rssiData,       // Pass as RX B
+        CHANNELS_SIZE,  // Data size
+        100,            // Scale
         GRAPH_X,
         GRAPH_Y,
         GRAPH_W,
