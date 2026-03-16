@@ -52,13 +52,14 @@ void StateMenuHelper::draw() {
 
     // 1. Allocate the tiny RAM buffer on the first open
     if (!menuSpriteCreated) {
+        menuSprite.setColorDepth(16); // <--- ADD THIS LINE HERE
         menuSprite.createSprite(MENU_W, MENU_H);
         menuSpriteCreated = true;
     }
 
     // 2. Build the menu inside the invisible memory buffer
     menuSprite.fillSprite(TFT_BLACK);
-    menuSprite.drawFastVLine(0, 0, MENU_H, TFT_WHITE); // X=0 inside the sprite
+    menuSprite.drawFastVLine(0, 0, MENU_H, TFT_WHITE);
 
     const uint8_t yOffset = (MENU_H / 2) - ((this->activeItems * MENU_ITEM_H) / 2);
 
