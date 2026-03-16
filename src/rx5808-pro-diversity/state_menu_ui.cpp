@@ -2,102 +2,57 @@
 #include "state_menu.h"
 #include "ui.h"
 #include "ui_menu.h"
-// #include "pstr_helper.h" // PICO FIX: Not needed. Strings are read directly.
 
-
-#define TRIANGLE_SIZE 4
-#define TRIANGLE_MARGIN 2
-
-#define GRAPHIC_SIZE 32
-#define GRAPHIC_X SCREEN_WIDTH_MID - (GRAPHIC_SIZE / 2)
-#define GRAPHIC_Y 7
-
-#define TEXT_Y SCREEN_HEIGHT - (CHAR_HEIGHT + 2) * 2
-
-static void drawTriangles();
-static void drawMenuEntry();
-
+// Layout for 3 vertical text boxes
+#define BOX_W 120
+#define BOX_H 20
+#define BOX_X ((SCREEN_WIDTH - BOX_W) / 2)
+#define BOX_SPACING 24
+#define MENU_START_Y 6 // Centers the 3 items vertically on the 80px screen
 
 void StateMachine::MenuStateHandler::onInitialDraw() {
     Ui::clear();
-
     drawMenuEntry();
-    drawTriangles();
-
     Ui::needDisplay();
 }
 
 void StateMachine::MenuStateHandler::onUpdateDraw() {
-    Ui::clearRect(
-        0,
-        SCREEN_HEIGHT - (CHAR_HEIGHT + 2) * 2,
-        SCREEN_WIDTH,
-        (CHAR_HEIGHT + 2) * 2
-    );
-
     drawMenuEntry();
     Ui::needDisplay();
 }
 
-
 void StateMachine::MenuStateHandler::drawMenuEntry() {
-    const Ui::MenuItem* item = this->menu.getCurrentItem();
-    
-    // PICO FIX: Removed PSTRtoBuffer_P wrapper.
-    // item->text is a standard pointer directly readable by the Pico.
-    const uint8_t charLen = strlen(item->text);
+    int active = this->menu.getActiveItems();
+    int selected = this->menu.getSelectedItem();
 
-    Ui::display.setTextSize(2);
-    Ui::display.setTextColor(TFT_WHITE);
-    Ui::display.setCursor(
-        SCREEN_WIDTH_MID - (charLen * ((CHAR_WIDTH + 1) * 2)) / 2,
-        TEXT_Y
-    );
-    Ui::display.print(item->text);
+    for (int i = 0; i < active; i++) {
+        // Grab the item using the new const getter
+        const Ui::MenuItem* item = this->menu.getItem(i);
+        
+        int y = MENU_START_Y + (i * BOX_SPACING);
 
-    if (item->icon) {
-        Ui::clearRect(
-            GRAPHIC_X,
-            GRAPHIC_Y,
-            GRAPHIC_SIZE,
-            GRAPHIC_SIZE
-        );
+        // Highlight the selected item with Cyan text and a Green border. 
+        // Dim the unselected items to Dark Grey.
+        uint16_t borderColor = (i == selected) ? TFT_GREEN : TFT_DARKGREY;
+        uint16_t textColor = (i == selected) ? TFT_CYAN : TFT_DARKGREY;
+        
+        // 1. Draw the black background to erase any previous artifacts
+        Ui::display.fillRect(BOX_X, y, BOX_W, BOX_H, TFT_BLACK);
+        
+        // 2. Draw the border
+        Ui::display.drawRect(BOX_X, y, BOX_W, BOX_H, borderColor);
+        
+        // 3. Center the text inside the box
+        const uint8_t charLen = strlen(item->text);
+        
+        // Text size 2 characters are roughly 12 pixels wide (10px char + 2px space)
+        int textPixelWidth = charLen * 12; 
+        int textX = BOX_X + ((BOX_W - textPixelWidth) / 2);
+        int textY = y + 3; // Center the 14px tall text inside the 20px tall box
 
-        Ui::display.drawBitmap(
-            GRAPHIC_X,
-            GRAPHIC_Y,
-            item->icon,
-            GRAPHIC_SIZE,
-            GRAPHIC_SIZE,
-            TFT_WHITE
-        );
+        Ui::display.setTextSize(2);
+        Ui::display.setTextColor(textColor, TFT_BLACK);
+        Ui::display.setCursor(textX, textY);
+        Ui::display.print(item->text);
     }
-}
-
-static void drawTriangles() {
-    Ui::display.fillTriangle(
-        SCREEN_WIDTH - 1 - (TRIANGLE_SIZE),
-        SCREEN_HEIGHT_MID + TRIANGLE_MARGIN,
-
-        SCREEN_WIDTH - 1 - (TRIANGLE_SIZE / 2),
-        SCREEN_HEIGHT_MID + TRIANGLE_MARGIN + (TRIANGLE_SIZE),
-
-        SCREEN_WIDTH - 1,
-        SCREEN_HEIGHT_MID + TRIANGLE_MARGIN,
-
-        TFT_WHITE
-    );
-
-    Ui::display.fillTriangle(
-        SCREEN_WIDTH - 1 - (TRIANGLE_SIZE),
-        SCREEN_HEIGHT_MID - TRIANGLE_MARGIN,
-
-        SCREEN_WIDTH - 1 - (TRIANGLE_SIZE / 2),
-        SCREEN_HEIGHT_MID - TRIANGLE_MARGIN - (TRIANGLE_SIZE),
-
-        SCREEN_WIDTH - 1,
-        SCREEN_HEIGHT_MID - TRIANGLE_MARGIN,
-
-        TFT_WHITE
-    );
 }

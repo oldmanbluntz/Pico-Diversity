@@ -55,6 +55,20 @@ namespace Ui {
         const uint16_t h
     );
 
+    void drawRssiBars(
+        const uint8_t rssiA,
+        const uint8_t rssiB,
+        const uint8_t rssiMin,
+        const uint8_t rssiMax,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h,
+        const uint16_t colorA,
+        const uint16_t colorB,
+        bool forceRedraw = false
+    );
+
     void drawStatusBar();
 
     void drawDashedHLine(const int x, const int y, const int w, const int step);

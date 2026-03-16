@@ -1,30 +1,28 @@
 #include "ui.h"
 #include "ui_state_menu.h"
-// #include "pstr_helper.h" // PICO FIX: Not needed.
-
 
 using Ui::display;
 using Ui::StateMenuHelper;
 
-
-#define MENU_ITEM_W 16
-#define MENU_ITEM_H 16
-
-#define MENU_MARGIN 2
-#define MENU_W ((MENU_ITEM_W))
-#define MENU_TARGET_X (SCREEN_WIDTH - MENU_W)
-#define MENU_X (MENU_TARGET_X + this->slideX)
+#define MENU_ITEM_H 14
+#define MENU_W 52
+#define MENU_TARGET_X (SCREEN_WIDTH - MENU_W) 
 #define MENU_H (SCREEN_HEIGHT)
 
+void StateMenuHelper::hide() {
+    this->visible = false;
+    Ui::needFullRedraw();
+}
 
 void StateMenuHelper::addItem(
-    const MenuIcon icon,
+    const MenuText textFn,
     const MenuHandler handler
 ) {
-    this->menuItems[this->activeItems].icon = icon;
-    this->menuItems[this->activeItems].handler = handler;
-
-    this->activeItems++;
+    if (this->activeItems < STATE_MENU_ITEMS_MAX) {
+        this->menuItems[this->activeItems].textFn = textFn;
+        this->menuItems[this->activeItems].handler = handler;
+        this->activeItems++;
+    }
 }
 
 bool StateMenuHelper::handleButtons(
@@ -37,14 +35,16 @@ bool StateMenuHelper::handleButtons(
             Ui::needFullRedraw();
 
         if (this->visible) {
-            this->slideX = MENU_W;
+            this->menuX = SCREEN_WIDTH; // Start entirely off-screen
         }
-
         return true;
     }
 
     if (!this->isVisible())
         return false;
+        
+    if (pressType != Buttons::PressType::SHORT) 
+        return true; 
 
     switch (button) {
         case Button::UP:
@@ -61,7 +61,8 @@ bool StateMenuHelper::handleButtons(
             this->menuItems[this->selectedItem].handler(this->state);
             break;
     }
-
+    
+    Ui::needUpdate(); 
     return true;
 }
 
@@ -69,48 +70,39 @@ void StateMenuHelper::draw() {
     if (!this->isVisible())
         return;
 
-    if (MENU_X != MENU_TARGET_X) {
-        this->slideX -= 4;
-        if (this->slideX < 0)
-            this->slideX = 0;
+    if (this->menuX > MENU_TARGET_X) {
+        this->menuX -= 8; 
+        if (this->menuX < MENU_TARGET_X) {
+            this->menuX = MENU_TARGET_X; 
+        }
     }
 
-    display.fillRect(
-        MENU_X,
-        0,
-        MENU_W,
-        MENU_H,
-        TFT_BLACK
-    );
-
-    display.drawFastVLine(
-        MENU_X - 1,
-        0,
-        MENU_H,
-        TFT_WHITE
-    );
+    // Fill from the menu's left edge all the way to the right screen edge.
+    display.fillRect(this->menuX, 0, SCREEN_WIDTH - this->menuX, MENU_H, TFT_BLACK);
+    
+    // Draw the white border line
+    display.drawFastVLine(this->menuX - 1, 0, MENU_H, TFT_WHITE);
 
     const uint8_t yOffset =
         SCREEN_HEIGHT_MID - ((this->activeItems * MENU_ITEM_H) / 2);
 
-    for (uint8_t i = 0; i < this->activeItems; i++) {
-        if (this->selectedItem == i) {
-            display.fillRect(
-                MENU_X,
-                MENU_ITEM_H * i + yOffset,
-                MENU_ITEM_W,
-                MENU_ITEM_H,
-                TFT_WHITE
-            );
-        }
+    // TURN OFF TEXT WRAPPING!
+    display.setTextWrap(false);
 
-        display.drawBitmap(
-            MENU_X,
-            MENU_ITEM_H * i + yOffset,
-            this->menuItems[i].icon(this->state),
-            MENU_ITEM_W,
-            MENU_ITEM_H,
-            this->selectedItem == i ? TFT_BLACK : TFT_WHITE
-        );
+    for (uint8_t i = 0; i < this->activeItems; i++) {
+        uint16_t bgColor = (this->selectedItem == i) ? TFT_WHITE : TFT_BLACK;
+        uint16_t fgColor = (this->selectedItem == i) ? TFT_BLACK : TFT_WHITE;
+
+        display.fillRect(this->menuX, MENU_ITEM_H * i + yOffset, MENU_W, MENU_ITEM_H, bgColor);
+
+        const char* text = this->menuItems[i].textFn(this->state);
+        display.setTextSize(1);
+        display.setTextColor(fgColor, bgColor);
+        
+        display.setCursor(this->menuX + 2, MENU_ITEM_H * i + yOffset + 3);
+        display.print(text);
     }
+    
+    // Turn it back on so we don't break other screens
+    display.setTextWrap(true);
 }

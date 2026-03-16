@@ -3,127 +3,101 @@
 #include "receiver.h"
 #include "channels.h"
 #include "ui.h"
-// #include "pstr_helper.h" // PICO FIX: Not needed.
 
-
-#define BORDER_GRAPH_L_X 60
+// Top 2/3 Layout (Y: 0 to 53)
+#define FREQUENCY_TEXT_SIZE 1
+#define FREQUENCY_TEXT_X 68 // Centered: (160 - (4 chars * 6px * size 1)) / 2
+#define FREQUENCY_TEXT_Y 2
 
 #define CHANNEL_TEXT_SIZE 5
-#define CHANNEL_TEXT_X 0
-#define CHANENL_TEXT_Y 0
-#define CHANNEL_TEXT_H (CHAR_HEIGHT * CHANNEL_TEXT_SIZE)
+#define CHANNEL_TEXT_X 46   // Centered: (160 - (2 chars * 6px * size 5)) / 2
+#define CHANENL_TEXT_Y 14
 
-#define FREQUENCY_TEXT_SIZE 2
-#define FREQUENCY_TEXT_X 6
-#define FREQUENCY_TEXT_Y (SCREEN_HEIGHT - (CHAR_HEIGHT * 2))
-#define FREQUENCY_TEXT_H (CHAR_HEIGHT * FREQUENCY_TEXT_SIZE)
+// Bottom 1/3 Layout (Y: 54 to 80)
+#define BARS_Y 58
+#define BARS_H 20
+#define BARS_X 28
+#define BARS_W (SCREEN_WIDTH - BARS_X - 4)
 
-#define SCANBAR_BORDER_X 0
-#define SCANBAR_BORDER_Y (CHANNEL_TEXT_H + 4)
-#define SCANBAR_BORDER_W (BORDER_GRAPH_L_X - 4)
-#define SCANBAR_BORDER_H 7
-
-#define SCANBAR_X (SCANBAR_BORDER_X + 2)
-#define SCANBAR_Y (SCANBAR_BORDER_Y + 2)
-#define SCANBAR_W (SCANBAR_BORDER_W - 4)
-#define SCANBAR_H (SCANBAR_BORDER_H - 4)
-
-//#define GRAPH_SEPERATOR_Y SCREEN_HEIGHT_MID
-//#define GRAPH_SEPERATOR_W (SCREEN_WIDTH - BORDER_GRAPH_L_X)
-#define GRAPH_SEPERATOR_STEP 3
-
-//#define GRAPH_X (BORDER_GRAPH_L_X + 2)
-//#define GRAPH_W (SCREEN_WIDTH - BORDER_GRAPH_L_X)
-//#ifdef USE_DIVERSITY
-//    #define GRAPH_H (GRAPH_SEPERATOR_Y - 2)
-//    #define GRAPH_A_Y 0
-//    #define GRAPH_B_Y (SCREEN_HEIGHT - GRAPH_H - 1)
-//
-//    #define RX_TEXT_SIZE 1
-//    #define RX_TEXT_X (BORDER_GRAPH_L_X + 4)
-//    #define RX_TEXT_H (CHAR_HEIGHT * RX_TEXT_SIZE)
-//    #define RX_TEXT_A_Y ((GRAPH_A_Y + GRAPH_H / 2) - (RX_TEXT_H / 2))
-//    #define RX_TEXT_B_Y ((GRAPH_B_Y + GRAPH_H / 2) - (RX_TEXT_H / 2))
-//#else
-//    #define GRAPH_H (SCREEN_HEIGHT - 1)
-//    #define GRAPH_Y 0
-//    #define GRAPH_B_Y 0
-//#endif
-#define GRAPH_X (BORDER_GRAPH_L_X + 2)
-#define GRAPH_W (SCREEN_WIDTH - BORDER_GRAPH_L_X)
-#define GRAPH_H (SCREEN_HEIGHT)
-#define GRAPH_Y 0
+// Sync colors for Labels and Bars
+#define COLOR_RXA TFT_YELLOW
+#define COLOR_RXB TFT_CYAN
 
 using Ui::display;
-
 
 void StateMachine::SearchStateHandler::onInitialDraw() {
     Ui::clear();
 
-    drawBorders();
+    // Draw static labels for RXA and RXB
+    display.setTextSize(1);
+    #ifdef USE_DIVERSITY
+        display.setTextColor(COLOR_RXA, TFT_BLACK);
+        display.setCursor(2, BARS_Y);
+        display.print("RXA");
+        
+        display.setTextColor(COLOR_RXB, TFT_BLACK);
+        display.setCursor(2, BARS_Y + (BARS_H / 2));
+        display.print("RXB");
+    #else
+        display.setTextColor(COLOR_RXA, TFT_BLACK);
+        display.setCursor(2, BARS_Y + (BARS_H / 4));
+        display.print("RX");
+    #endif
 
     drawChannelText();
     drawFrequencyText();
-    drawScanBar();
-    drawRssiGraph();
+    
+    // Force a full redraw of the bars on screen load to prevent holes
+    #ifdef USE_DIVERSITY
+        Ui::drawRssiBars(Receiver::rssiA, Receiver::rssiB, 0, 100, BARS_X, BARS_Y, BARS_W, BARS_H, COLOR_RXA, COLOR_RXB, true);
+    #else
+        Ui::drawRssiBars(Receiver::rssiA, 0, 0, 100, BARS_X, BARS_Y, BARS_W, BARS_H, COLOR_RXA, COLOR_RXB, true);
+    #endif
 
     Ui::needDisplay();
 }
 
 void StateMachine::SearchStateHandler::onUpdateDraw() {
-//    Ui::clearRect(
-//        0,
-//        0,
-//        BORDER_GRAPH_L_X,
-//        CHANNEL_TEXT_H
-//    );
-
-//   Ui::clearRect(
-//        0,
-//        FREQUENCY_TEXT_Y,
-//        BORDER_GRAPH_L_X,
-//        CHAR_HEIGHT * 2
-//    );
-
-//    Ui::clearRect(
-//        SCANBAR_X,
-//        SCANBAR_Y,
-//        SCANBAR_W,
-//        SCANBAR_H
-//    );
-
     drawChannelText();
     drawFrequencyText();
-    drawScanBar();
     drawRssiGraph();
     menu.draw();
     Ui::needDisplay();
 }
 
 void StateMachine::SearchStateHandler::drawBorders() {
-    display.drawRoundRect(
-        SCANBAR_BORDER_X,
-        SCANBAR_BORDER_Y,
-        SCANBAR_BORDER_W,
-        SCANBAR_BORDER_H,
-        2,
-        TFT_WHITE
-    );
-
-    Ui::drawDashedVLine(
-        BORDER_GRAPH_L_X,
-        0,
-        SCREEN_HEIGHT,
-        GRAPH_SEPERATOR_STEP
-    );
+    // Intentionally left empty to satisfy the header definition
 }
 
 void StateMachine::SearchStateHandler::drawChannelText() {
-    display.setTextSize(CHANNEL_TEXT_SIZE);
-    display.setTextColor(TFT_WHITE, TFT_BLACK);
-    display.setCursor(CHANNEL_TEXT_X, CHANENL_TEXT_Y);
+    const char* name = Channels::getName(Receiver::activeChannel);
+    char letter = name[0];
+    const char* number = &name[1]; // Grabs the numeric remainder
 
-    display.print(Channels::getName(Receiver::activeChannel));
+    uint16_t letterColor = TFT_WHITE;
+    
+    // Rainbow color ordering for standard FPV bands
+    switch(letter) {
+        case 'A': letterColor = TFT_RED; break;     // Boscam A
+        case 'B': letterColor = TFT_ORANGE; break;  // Boscam B
+        case 'E': letterColor = TFT_YELLOW; break;  // Boscam E
+        case 'F': letterColor = TFT_GREEN; break;   // Fatshark
+        case 'R': letterColor = TFT_BLUE; break;    // Raceband
+        case 'L': letterColor = TFT_PURPLE; break;  // Lowband
+        case 'U': letterColor = TFT_MAGENTA; break; // User/Custom
+        default:  letterColor = TFT_WHITE; break;
+    }
+
+    display.setTextSize(CHANNEL_TEXT_SIZE);
+    display.setCursor(CHANNEL_TEXT_X, CHANENL_TEXT_Y);
+    
+    // Draw the band letter in color
+    display.setTextColor(letterColor, TFT_BLACK);
+    display.print(letter);
+    
+    // Draw the channel number in white
+    display.setTextColor(TFT_WHITE, TFT_BLACK);
+    display.print(number);
 }
 
 void StateMachine::SearchStateHandler::drawFrequencyText() {
@@ -135,52 +109,15 @@ void StateMachine::SearchStateHandler::drawFrequencyText() {
 }
 
 void StateMachine::SearchStateHandler::drawScanBar() {
-    uint16_t scanWidth = orderedChanelIndex * SCANBAR_W / CHANNELS_SIZE;
-
-    // 1. Draw the white progress bar
-    display.fillRect(SCANBAR_X, SCANBAR_Y, scanWidth, SCANBAR_H, TFT_WHITE);
-    
-    // 2. Erase ONLY the empty space to the right of the progress bar (Stops the flashing!)
-    if (scanWidth < SCANBAR_W) {
-        display.fillRect(SCANBAR_X + scanWidth, SCANBAR_Y, SCANBAR_W - scanWidth, SCANBAR_H, TFT_BLACK);
-    }
+    // Intentionally left empty to satisfy the header definition
 }
 
 void StateMachine::SearchStateHandler::drawRssiGraph() {
+    // Regular update drawing loop. forceRedraw flag is naturally omitted/false.
     #ifdef USE_DIVERSITY
-        // 1. Draw the new unified overlapping graph using the full height
-        Ui::drawDiversityGraph(
-            Receiver::rssiALast,
-            Receiver::rssiBLast,
-            RECEIVER_LAST_DATA_SIZE,
-            100,
-            GRAPH_X,
-            GRAPH_Y,
-            GRAPH_W,
-            GRAPH_H
-        );
-
-        // 2. Overlay a tiny legend directly on top of the graph in the corner
-       display.setTextSize(1);
-        
-        display.setCursor(GRAPH_X + 2, GRAPH_Y + 2);
-        display.setTextColor(TFT_YELLOW, TFT_BLACK); // RX A = Yellow
-        display.print("A");
-
-        display.setCursor(GRAPH_X + 2, GRAPH_Y + 12);
-        display.setTextColor(TFT_CYAN, TFT_BLACK);   // RX B = Cyan
-        display.print("B");
-
+        Ui::drawRssiBars(Receiver::rssiA, Receiver::rssiB, 0, 100, BARS_X, BARS_Y, BARS_W, BARS_H, COLOR_RXA, COLOR_RXB);
     #else
-        Ui::drawGraph(
-            Receiver::rssiALast,
-            RECEIVER_LAST_DATA_SIZE,
-            100,
-            GRAPH_X,
-            GRAPH_Y,
-            GRAPH_W,
-            GRAPH_H
-        );
+        Ui::drawRssiBars(Receiver::rssiA, 0, 0, 100, BARS_X, BARS_Y, BARS_W, BARS_H, COLOR_RXA, COLOR_RXB);
     #endif
 }
 
