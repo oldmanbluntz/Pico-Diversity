@@ -232,7 +232,7 @@ namespace Ui {
         const int step
     ) {
         for (int i = 0; i <= w; i += step) {
-            Ui::display.drawFastHLine(x + i, y, step / 2, TFT_WHITE);
+            Ui::display.drawFastHLine(x + i, y, step / 2, TFT_LIGHTGREY);
         }
     }
 

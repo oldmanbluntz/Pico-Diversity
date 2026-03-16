@@ -42,40 +42,43 @@ static float currentAngle = 0.0;
 // 2. 3D Drawing Functions
 // ==============================================================================
 void drawWireframeBox(float angle) {
-    // Sized specifically for a 160x80 pixel screen
-    float w = 60.0; // Width (X) 
-    float h = 30.0; // Height (Y) 
-    float d = 20.0; // Depth (Z)
+    float w = 60.0; // Width 
+    float h = 30.0; // Height 
+    float d = 20.0; // Depth 
 
     Point3D corners[8] = {
+        // Front Face (0: Top Right, 1: Top Left, 2: Bottom Left, 3: Bottom Right)
         { w,  h,  d}, {-w,  h,  d}, {-w, -h,  d}, { w, -h,  d},
+        // Back Face (4: Top Right, 5: Top Left, 6: Bottom Left, 7: Bottom Right)
         { w,  h, -d}, {-w,  h, -d}, {-w, -h, -d}, { w, -h, -d}
     };
 
-    Point2D proj[8];
+    Point2D p[8];
     for (int i = 0; i < 8; i++) {
-        proj[i] = project(rotateY(corners[i], angle));
+        p[i] = project(rotateY(corners[i], angle));
     }
 
-    uint16_t boxColor = TFT_DARKGREY;
+    uint16_t boxColor = TFT_DARKGREY; 
     
-    // Front face
-    Ui::display.drawLine(proj[0].x, proj[0].y, proj[1].x, proj[1].y, boxColor);
-    Ui::display.drawLine(proj[1].x, proj[1].y, proj[2].x, proj[2].y, boxColor);
-    Ui::display.drawLine(proj[2].x, proj[2].y, proj[3].x, proj[3].y, boxColor);
-    Ui::display.drawLine(proj[3].x, proj[3].y, proj[0].x, proj[0].y, boxColor);
+    // 1. Draw Top Face
+    Ui::display.drawLine(p[2].x, p[2].y, p[3].x, p[3].y, boxColor);
+    Ui::display.drawLine(p[6].x, p[6].y, p[7].x, p[7].y, boxColor);
+    Ui::display.drawLine(p[2].x, p[2].y, p[6].x, p[6].y, boxColor);
+    Ui::display.drawLine(p[3].x, p[3].y, p[7].x, p[7].y, boxColor);
 
-    // Back face
-    Ui::display.drawLine(proj[4].x, proj[4].y, proj[5].x, proj[5].y, boxColor);
-    Ui::display.drawLine(proj[5].x, proj[5].y, proj[6].x, proj[6].y, boxColor);
-    Ui::display.drawLine(proj[6].x, proj[6].y, proj[7].x, proj[7].y, boxColor);
-    Ui::display.drawLine(proj[7].x, proj[7].y, proj[4].x, proj[4].y, boxColor);
+    // 2. Draw Bottom Face
+    Ui::display.drawLine(p[0].x, p[0].y, p[1].x, p[1].y, boxColor);
+    Ui::display.drawLine(p[4].x, p[4].y, p[5].x, p[5].y, boxColor);
+    Ui::display.drawLine(p[0].x, p[0].y, p[4].x, p[4].y, boxColor);
+    Ui::display.drawLine(p[1].x, p[1].y, p[5].x, p[5].y, boxColor);
 
-    // Connecting struts
-    Ui::display.drawLine(proj[0].x, proj[0].y, proj[4].x, proj[4].y, boxColor);
-    Ui::display.drawLine(proj[1].x, proj[1].y, proj[5].x, proj[5].y, boxColor);
-    Ui::display.drawLine(proj[2].x, proj[2].y, proj[6].x, proj[6].y, boxColor);
-    Ui::display.drawLine(proj[3].x, proj[3].y, proj[7].x, proj[7].y, boxColor);
+    
+    int stepSize = 4; 
+
+    Ui::drawDashedVLine(p[0].x, min(p[0].y, p[3].y), abs(p[3].y - p[0].y), stepSize); // Front Right
+    Ui::drawDashedVLine(p[1].x, min(p[1].y, p[2].y), abs(p[2].y - p[1].y), stepSize); // Front Left
+    Ui::drawDashedVLine(p[4].x, min(p[4].y, p[7].y), abs(p[7].y - p[4].y), stepSize); // Back Right
+    Ui::drawDashedVLine(p[5].x, min(p[5].y, p[6].y), abs(p[6].y - p[5].y), stepSize); // Back Left
 }
 
 void draw3DGrid(float angle) {
