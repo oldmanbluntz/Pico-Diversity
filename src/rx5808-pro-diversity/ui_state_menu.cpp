@@ -4,7 +4,7 @@
 using Ui::display;
 using Ui::StateMenuHelper;
 
-#define MENU_W 52
+#define MENU_W 56
 #define MENU_X 108 
 #define MENU_H 80
 #define MENU_ITEM_H 14
@@ -50,16 +50,9 @@ bool StateMenuHelper::handleButtons(Button button, Buttons::PressType pressType)
 void StateMenuHelper::draw() {
     if (!this->isVisible()) return;
 
-    // 1. Allocate the tiny RAM buffer on the first open
-    if (!menuSpriteCreated) {
-        menuSprite.setColorDepth(16); // <--- ADD THIS LINE HERE
-        menuSprite.createSprite(MENU_W, MENU_H);
-        menuSpriteCreated = true;
-    }
-
-    // 2. Build the menu inside the invisible memory buffer
-    menuSprite.fillSprite(TFT_BLACK);
-    menuSprite.drawFastVLine(0, 0, MENU_H, TFT_WHITE);
+    // Draw directly to the screen instead of the sprite
+    display.fillRect(MENU_X, 0, MENU_W, MENU_H, TFT_BLACK);
+    display.drawFastVLine(MENU_X, 0, MENU_H, TFT_WHITE); 
 
     const uint8_t yOffset = (MENU_H / 2) - ((this->activeItems * MENU_ITEM_H) / 2);
 
@@ -67,16 +60,14 @@ void StateMenuHelper::draw() {
         uint16_t bgColor = (this->selectedItem == i) ? TFT_WHITE : TFT_BLACK;
         uint16_t fgColor = (this->selectedItem == i) ? TFT_BLACK : TFT_WHITE;
 
-        menuSprite.fillRect(1, MENU_ITEM_H * i + yOffset, MENU_W - 1, MENU_ITEM_H, bgColor);
+        // Add MENU_X to all X coordinates since we aren't using the sprite's local 0,0 anymore
+        display.fillRect(MENU_X + 1, MENU_ITEM_H * i + yOffset, MENU_W - 1, MENU_ITEM_H, bgColor);
 
         const char* text = this->menuItems[i].textFn(this->state);
-        menuSprite.setTextSize(1);
-        menuSprite.setTextColor(fgColor, bgColor);
+        display.setTextSize(1);
+        display.setTextColor(fgColor, bgColor);
         
-        menuSprite.setCursor(3, MENU_ITEM_H * i + yOffset + 3);
-        menuSprite.print(text);
+        display.setCursor(MENU_X + 3, MENU_ITEM_H * i + yOffset + 3);
+        display.print(text);
     }
-    
-    // 3. Blast the fully completed image to the TFT hardware instantly
-    menuSprite.pushSprite(MENU_X, 0);
 }
