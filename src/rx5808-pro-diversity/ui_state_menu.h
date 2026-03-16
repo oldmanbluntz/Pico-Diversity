@@ -23,8 +23,11 @@ namespace Ui {
             bool handleButtons(Button button, Buttons::PressType pressType);
             bool isVisible() { return this->visible; }
             
-            void hide(); 
-            
+            void hide() { 
+                this->visible = false; 
+                Ui::needFullRedraw(); 
+            }
+
             void addItem(
                 const MenuText textFn,
                 const MenuHandler handler
@@ -37,8 +40,8 @@ namespace Ui {
             int activeItems = 0;
             int selectedItem = 0;
             bool visible = false;
-
-            int16_t menuX = 160; // Start entirely off-screen
+            
+            // NO SLIDING VARIABLES ALLOWED HERE
     };
 }
 

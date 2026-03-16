@@ -193,48 +193,38 @@ namespace Ui {
     static uint16_t last_barB_w = 0;
 
     void drawRssiBars(
-        const uint8_t rssiA,
-        const uint8_t rssiB,
-        const uint8_t rssiMin,
-        const uint8_t rssiMax,
-        const uint16_t x,
-        const uint16_t y,
-        const uint16_t w,
-        const uint16_t h,
-        const uint16_t colorA,
-        const uint16_t colorB,
-        bool forceRedraw
+        const uint8_t rssiA, const uint8_t rssiB, const uint8_t rssiMin, const uint8_t rssiMax,
+        const uint16_t x, const uint16_t y, const uint16_t w, const uint16_t h,
+        const uint16_t colorA, const uint16_t colorB, bool forceRedraw
     ) {
         if (forceRedraw) {
             last_barA_w = 0;
             last_barB_w = 0;
-            display.fillRect(x, y, w, h, TFT_BLACK); 
+            display.fillRect(x, y, w, h, TFT_BLACK); // Changed to canvas
         }
 
         uint16_t barW_A = map(constrain(rssiA, rssiMin, rssiMax), rssiMin, rssiMax, 0, w);
         uint16_t barW_B = map(constrain(rssiB, rssiMin, rssiMax), rssiMin, rssiMax, 0, w);
-
         uint16_t halfH = h / 2;
 
-        // --- RX A Bar ---
         if (barW_A > last_barA_w) {
-            display.fillRect(x + last_barA_w, y, barW_A - last_barA_w, halfH - 2, colorA);
+            display.fillRect(x + last_barA_w, y, barW_A - last_barA_w, halfH - 2, colorA); // Changed to canvas
         } else if (barW_A < last_barA_w) {
-            display.fillRect(x + barW_A, y, last_barA_w - barW_A, halfH - 2, TFT_BLACK);
+            display.fillRect(x + barW_A, y, last_barA_w - barW_A, halfH - 2, TFT_BLACK); // Changed to canvas
         }
 
-        // --- RX B Bar ---
         #ifdef USE_DIVERSITY
         if (barW_B > last_barB_w) {
-            display.fillRect(x + last_barB_w, y + halfH, barW_B - last_barB_w, halfH - 2, colorB);
+            display.fillRect(x + last_barB_w, y + halfH, barW_B - last_barB_w, halfH - 2, colorB); // Changed to canvas
         } else if (barW_B < last_barB_w) {
-            display.fillRect(x + barW_B, y + halfH, last_barB_w - barW_B, halfH - 2, TFT_BLACK);
+            display.fillRect(x + barW_B, y + halfH, last_barB_w - barW_B, halfH - 2, TFT_BLACK); // Changed to canvas
         }
         #endif
 
         last_barA_w = barW_A;
         last_barB_w = barW_B;
     }
+
     void drawDashedHLine(
         const int x,
         const int y,
