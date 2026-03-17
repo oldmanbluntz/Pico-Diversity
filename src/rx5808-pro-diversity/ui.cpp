@@ -53,9 +53,9 @@ namespace Ui {
         }
     }
 
-    static uint16_t last_yA[160] = {0};
-    static uint16_t last_yB[160] = {0};
-    static uint16_t last_ySingle[160] = {0};
+    static uint16_t last_yA[SCREEN_WIDTH] = {0};
+    static uint16_t last_yB[SCREEN_WIDTH] = {0};
+    static uint16_t last_ySingle[SCREEN_WIDTH] = {0};
     static bool firstDiversityDraw = true;
     static bool firstSingleDraw = true;
 
@@ -71,15 +71,15 @@ namespace Ui {
     ) {
         // --- THE SNAPSHOT FIX ---
         // Freeze the data so asynchronous receiver updates can't tear the line mid-draw
-        uint8_t snapA[160]; 
-        uint8_t snapB[160];
+        uint8_t snapA[SCREEN_WIDTH]; 
+        uint8_t snapB[SCREEN_WIDTH];
         for (uint16_t i = 0; i < dataSize; i++) {
             snapA[i] = dataA[i];
             snapB[i] = dataB[i];
         }
 
         if (firstDiversityDraw) {
-            for(int i = 0; i < 160; i++) {
+            for(int i = 0; i < SCREEN_WIDTH; i++) {
                 last_yA[i] = y + h - 2;
                 last_yB[i] = y + h - 2;
             }
@@ -156,7 +156,7 @@ namespace Ui {
         const uint16_t h
     ) {
         if (firstSingleDraw) {
-            for(int i = 0; i < 160; i++) {
+            for(int i = 0; i < SCREEN_WIDTH; i++) {
                 last_ySingle[i] = y + h - 2;
             }
             display.fillRect(x, y, w, h, TFT_BLACK);

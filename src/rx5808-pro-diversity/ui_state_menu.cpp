@@ -5,8 +5,8 @@ using Ui::display;
 using Ui::StateMenuHelper;
 
 #define MENU_W 56
-#define MENU_X 108 
-#define MENU_H 80
+#define MENU_X 192 
+#define MENU_H 135
 #define MENU_ITEM_H 14
 
 // The dedicated memory buffer JUST for the menu

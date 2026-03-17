@@ -42,9 +42,10 @@ static float currentAngle = 0.0;
 // 2. 3D Drawing Functions
 // ==============================================================================
 void drawWireframeBox(float angle) {
-    float w = 60.0; // Width 
-    float h = 30.0; // Height 
-    float d = 20.0; // Depth 
+    // Equalized dimensions for a perfect 90x90x90 cube
+    float w = 45.0; // Width
+    float h = 45.0; // Height 
+    float d = 45.0; // Depth 
 
     Point3D corners[8] = {
         // Front Face (0: Top Right, 1: Top Left, 2: Bottom Left, 3: Bottom Right)
@@ -71,7 +72,6 @@ void drawWireframeBox(float angle) {
     Ui::display.drawLine(p[4].x, p[4].y, p[5].x, p[5].y, boxColor);
     Ui::display.drawLine(p[0].x, p[0].y, p[4].x, p[4].y, boxColor);
     Ui::display.drawLine(p[1].x, p[1].y, p[5].x, p[5].y, boxColor);
-
     
     int stepSize = 4; 
 
@@ -82,26 +82,18 @@ void drawWireframeBox(float angle) {
 }
 
 void draw3DGrid(float angle) {
-    // Choose a subtle color for the background dots
     uint16_t dotColor = TFT_LIGHTGREY; 
 
-    // Loop through 3D space to create a 5x3x3 matrix of dots (45 dots total)
-    // X goes from Left to Right (-60 to +60 in steps of 30)
-    for (float x = -60.0; x <= 60.0; x += 30.0) {
-        
-        // Y goes from Bottom to Top (-30 to +30 in steps of 30)
-        for (float y = -30.0; y <= 30.0; y += 30.0) {
-            
-            // Z goes from Front to Back (-20 to +20 in steps of 20)
-            for (float z = -20.0; z <= 20.0; z += 20.0) {
+    // Scaled grid loops to match the new 90x90x90 cube bounds
+    // We step by 45.0 to give us a clean 3x3x3 grid of dots (27 dots total)
+    for (float x = -45.0; x <= 45.0; x += 45.0) {
+        for (float y = -45.0; y <= 45.0; y += 45.0) {
+            for (float z = -45.0; z <= 45.0; z += 45.0) {
                 
                 Point3D p = { x, y, z };
-                
-                // Rotate and project each dot
                 p = rotateY(p, angle);
                 Point2D proj = project(p);
                 
-                // Draw a small 2x2 pixel square so the dots are visible
                 Ui::display.fillRect(proj.x, proj.y, 2, 2, dotColor);
             }
         }
@@ -114,19 +106,20 @@ void drawSpinningGraph(const uint8_t rxDataA[], const uint8_t rxDataB[], int dat
     Point2D lastProjA, lastProjB;
 
     for (int i = 0; i < dataSize; i++) {
-        // Space the data points evenly across the width of our 3D box (-60 to +60)
-        float xPos = ((float)i / (float)(dataSize - 1)) * 120.0 - 60.0;
+        // Squished the X scaling to fit the new width of 90 (offset -45)
+        float xPos = ((float)i / (float)(dataSize - 1)) * 90.0 - 45.0;
         
-        // Map RSSI amplitude to the height of our 3D box (-30 to +30)
-        float yPosA = 30.0 - ((float)rxDataA[i] / 100.0) * 60.0;
+        // Height scaling stays at 90 to match the cube
+        float yPosA = 45.0 - ((float)rxDataA[i] / 100.0) * 90.0;
         float yPosB = 0;
         
         #ifdef USE_DIVERSITY
-            yPosB = 30.0 - ((float)rxDataB[i] / 100.0) * 60.0;
+            yPosB = 45.0 - ((float)rxDataB[i] / 100.0) * 90.0;
         #endif
 
-        Point3D pA = { xPos, yPosA, 10.0 };
-        Point3D pB = { xPos, yPosB, -10.0 };
+        // Pushed depth out to +/- 20 to take advantage of the deeper cube space!
+        Point3D pA = { xPos, yPosA, 20.0 };
+        Point3D pB = { xPos, yPosB, -20.0 };
 
         pA = rotateY(pA, currentAngle);
         pB = rotateY(pB, currentAngle);

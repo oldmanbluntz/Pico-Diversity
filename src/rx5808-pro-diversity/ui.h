@@ -12,8 +12,8 @@
 #include "settings_internal.h"
 
 
-#define SCREEN_WIDTH 160
-#define SCREEN_HEIGHT 80
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 135
 
 #define SCREEN_WIDTH_MID ((SCREEN_WIDTH / 2) - 1)
 #define SCREEN_HEIGHT_MID ((SCREEN_HEIGHT / 2) - 1)
