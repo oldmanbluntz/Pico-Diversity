@@ -32,12 +32,7 @@ Will possibly be making sellable units.
 - **OLED Display** - Use a 128x64 OLED.
 - **Setup Menu** - Creating changing settings (RSSI Calibration).
 
-# Overview
-Please watch the following video giving a detailed overview of the latest v2.0 release.
 
-<p align="center">
-    <a href="https://www.youtube.com/watch?v=PRY-XF2qSRU"><img src="https://img.youtube.com/vi/PRY-XF2qSRU/0.jpg"></a>
-</p>
 
 1. **Auto Scan** - Scans all bands until a signal with good signal strength is found.
 2. **Manual Mode** - Will hold on a manually selected channel.
