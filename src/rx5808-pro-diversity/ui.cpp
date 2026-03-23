@@ -17,12 +17,11 @@ namespace Ui {
 
 
     void setup() {
-        // PICO NOTE: Ensure I2C is started. 
-        // If your OLED is on specific pins (not default GP4/GP5), 
-        // you may need Wire.setSDA(pin) and Wire.setSCL(pin) before this.
-        Wire.begin(); 
-
+        // PICO NOTE: Wire.begin() and pin remapping moved to main.cpp setup() 
+        // to prevent hardware conflicts with buttons on GP4/GP5.
+        Wire.setClock(100000);
         display.begin(OLED_VCCSTATE, OLED_ADDRESS);
+        
 
         display.setTextColor(WHITE);
         display.setTextSize(1);
