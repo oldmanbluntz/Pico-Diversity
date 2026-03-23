@@ -32,7 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
+#include <arduino.h>
 #include <EEPROM.h> // PICO FIX: Required for flash emulation
 
 #include "settings.h"
@@ -47,6 +47,8 @@ SOFTWARE.
 
 #include "ui.h"
 
+void setupPins();
+void setupSettings();
 
 static void globalMenuButtonHandler(
     Button button,
