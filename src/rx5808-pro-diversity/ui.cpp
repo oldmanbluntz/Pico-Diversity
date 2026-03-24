@@ -27,28 +27,10 @@ namespace Ui {
                 digitalWrite(PIN_LED, LOW); delay(100);
             }
         }
-        //Wire.setClock(100000);
 
-        display.setTextColor(WHITE);
-        display.setTextSize(1);
-        display.setTextWrap(false);
-
-        display.clearDisplay();
-        
-        // --- FORCE PRINT TEST ---
-        display.setTextSize(2);      // Make the text big
-        display.setCursor(10, 20);   // Move cursor to the middle
-        display.println("WORKING");  // Draw the text
-        display.display();           // Push it to the physical screen
-        
-        delay(5000);
-
-        display.setTextColor(WHITE);
-        display.setTextSize(1);
-        display.setTextWrap(false);
-
-        display.clearDisplay();
-        display.display(); // Force an initial clear
+        display.setTextSize(1);      // Set it back to normal for the rest of the code
+        display.clearDisplay();      // Clear the "WORKING" message
+        display.display();           // Push the blank screen to start the main loop cleanly
     }
 
     void update() {

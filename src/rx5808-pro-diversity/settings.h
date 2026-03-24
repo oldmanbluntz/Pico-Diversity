@@ -122,11 +122,11 @@
     // RSSI strength should be greater than the value below (percent) over the
     // other receiver before we switch. This pervents flicker when RSSI values
     // are close and delays diversity checks counter.
-    #define DIVERSITY_HYSTERESIS 2
+    #define DIVERSITY_HYSTERESIS 10
 
     // How long (ms) the RSSI strength has to have a greater difference than the
     // above before switching.
-    #define DIVERSITY_HYSTERESIS_PERIOD 5
+    #define DIVERSITY_HYSTERESIS_PERIOD 100
 #endif
 
 // === Voltage Monitoring ======================================================

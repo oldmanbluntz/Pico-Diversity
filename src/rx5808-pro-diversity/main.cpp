@@ -55,11 +55,6 @@ void setup()
     delay(2000);
     Ui::setup();
 
-    for(int i=0; i<10; i++) { // 10 fast blinks = Setup reached the end
-        digitalWrite(PIN_LED, HIGH); delay(50);
-        digitalWrite(PIN_LED, LOW); delay(50);
-    }
-
     Receiver::setActiveReceiver(Receiver::ReceiverId::B);
 
     #ifdef USE_IR_EMITTER
@@ -124,6 +119,13 @@ void setupPins() {
 
 void setupSettings() {
     EepromSettings.load();
+    
+    // PICO FIX: Guard against uninitialized EEPROM garbage!
+    // If it reads 255 (empty flash), it will crash the Pico when drawing the text.
+    if (EepromSettings.startChannel > 47) {
+        EepromSettings.startChannel = 0; 
+    }
+    
     Receiver::setChannel(EepromSettings.startChannel);
 }
 
