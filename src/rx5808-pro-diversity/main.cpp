@@ -52,7 +52,7 @@ void setup()
 
     StateMachine::setup();
     Receiver::setup();
-
+    delay(2000);
     Ui::setup();
 
     for(int i=0; i<10; i++) { // 10 fast blinks = Setup reached the end
@@ -60,7 +60,7 @@ void setup()
         digitalWrite(PIN_LED, LOW); delay(50);
     }
 
-    Receiver::setActiveReceiver(Receiver::ReceiverId::A);
+    Receiver::setActiveReceiver(Receiver::ReceiverId::B);
 
     #ifdef USE_IR_EMITTER
         Serial.begin(9600);

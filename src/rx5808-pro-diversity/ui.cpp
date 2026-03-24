@@ -19,9 +19,29 @@ namespace Ui {
     void setup() {
         // PICO NOTE: Wire.begin() and pin remapping moved to main.cpp setup() 
         // to prevent hardware conflicts with buttons on GP4/GP5.
-        Wire.setClock(100000);
-        display.begin(OLED_VCCSTATE, OLED_ADDRESS);
         
+        if(!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {
+            // If we get trapped here, the screen is still failing to init
+            while(true) {
+                digitalWrite(PIN_LED, HIGH); delay(100);
+                digitalWrite(PIN_LED, LOW); delay(100);
+            }
+        }
+        //Wire.setClock(100000);
+
+        display.setTextColor(WHITE);
+        display.setTextSize(1);
+        display.setTextWrap(false);
+
+        display.clearDisplay();
+        
+        // --- FORCE PRINT TEST ---
+        display.setTextSize(2);      // Make the text big
+        display.setCursor(10, 20);   // Move cursor to the middle
+        display.println("WORKING");  // Draw the text
+        display.display();           // Push it to the physical screen
+        
+        delay(5000);
 
         display.setTextColor(WHITE);
         display.setTextSize(1);
