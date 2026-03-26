@@ -140,6 +140,9 @@ void setupPins() {
 
 void setupSettings() {
     EepromSettings.load();
+    if (EepromSettings.startChannel > 47) {
+        EepromSettings.startChannel = 0; 
+    }
     Receiver::setChannel(EepromSettings.startChannel);
 }
 
