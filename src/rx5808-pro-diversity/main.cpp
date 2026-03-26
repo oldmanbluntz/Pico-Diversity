@@ -60,6 +60,7 @@ void setup()
 {
     // PICO FIX: Initialize the Flash Emulation Buffer (512 bytes).
     // MUST be called before setupSettings() or any EEPROM access.
+    delay(500);
     EEPROM.begin(512);
 
     setupPins();
@@ -72,6 +73,7 @@ void setup()
 
     StateMachine::setup();
     Receiver::setup();
+    delay(2000);
     Ui::setup();
 
     Receiver::setActiveReceiver(Receiver::ReceiverId::A);
