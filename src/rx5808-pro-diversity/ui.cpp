@@ -16,14 +16,14 @@ namespace Ui {
 
     void setup() {
         display.init();
-        display.setRotation(3); // Set to 1 or 3 for landscape depending on your board mount
+        display.setRotation(1); // Set to 1 or 3 for landscape depending on your board mount
 
         // TFT_eSPI text background rendering
         display.setTextColor(TFT_WHITE, TFT_BLACK); 
         display.setTextSize(1);
         display.setTextWrap(false);
 
-        display.fillScreen(TFT_BLACK); 
+        display.fillScreen(TFT_RED); 
     }
 
     void update() {
