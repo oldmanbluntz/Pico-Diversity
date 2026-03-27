@@ -29,12 +29,20 @@ namespace Ui {
         SPI1.setTX(TFT_MOSI);
         SPI1.begin();
 
-        // Initialize the screen using Adafruit's specific 135x240 command
         display.init(135, 240);
+        
+        // FIX: Shift the memory offset to match generic 1.14" screens
         display.setRotation(1); 
 
         // --- DIAGNOSTIC TEST ---
         display.fillScreen(TFT_RED); 
+        
+        // Test if the text engine is rendering inside the visible window
+        display.setTextColor(TFT_WHITE);
+        display.setTextSize(3);
+        display.setCursor(30, 50);
+        display.print("SPI1 OK");
+        
         delay(3000); 
         display.fillScreen(TFT_GREEN);
         delay(3000);

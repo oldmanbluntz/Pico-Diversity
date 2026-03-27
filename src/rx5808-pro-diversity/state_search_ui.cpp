@@ -3,7 +3,6 @@
 #include "channels.h"
 #include "ui.h"
 
-// Map the missing TFT_eSPI colors used for the channel letters
 #ifndef TFT_ORANGE
 #define TFT_ORANGE  0xFDA0
 #endif
@@ -33,19 +32,20 @@
 using Ui::display;
 
 void StateMachine::SearchStateHandler::onInitialDraw() {
-    Ui::clear();
+    // PROOF OF LIFE: Wipe the screen to DARK GREY instead of BLACK.
+    display.fillScreen(TFT_DARKGREY);
 
     display.setTextSize(2);
     #ifdef USE_DIVERSITY
-        display.setTextColor(COLOR_RXA, TFT_BLACK);
+        display.setTextColor(COLOR_RXA, TFT_DARKGREY);
         display.setCursor(2, BARS_Y);
         display.print("RXA");
         
-        display.setTextColor(COLOR_RXB, TFT_BLACK);
+        display.setTextColor(COLOR_RXB, TFT_DARKGREY);
         display.setCursor(2, BARS_Y + (BARS_H / 2));
         display.print("RXB");
     #else
-        display.setTextColor(COLOR_RXA, TFT_BLACK);
+        display.setTextColor(COLOR_RXA, TFT_DARKGREY);
         display.setCursor(2, BARS_Y + (BARS_H / 4));
         display.print("RX");
     #endif
@@ -89,19 +89,23 @@ void StateMachine::SearchStateHandler::drawChannelText() {
         default:  letterColor = TFT_WHITE; break;
     }
 
+    display.fillRect(CHANNEL_TEXT_X, CHANENL_TEXT_Y, 96, 64, TFT_DARKGREY);
+
     display.setTextSize(CHANNEL_TEXT_SIZE);
     display.setCursor(CHANNEL_TEXT_X, CHANENL_TEXT_Y);
     
-    display.setTextColor(letterColor, TFT_BLACK);
+    display.setTextColor(letterColor, TFT_DARKGREY);
     display.print(letter);
     
-    display.setTextColor(TFT_WHITE, TFT_BLACK);
+    display.setTextColor(TFT_WHITE, TFT_DARKGREY);
     display.print(number);
 }
 
 void StateMachine::SearchStateHandler::drawFrequencyText() {
+    display.fillRect(FREQUENCY_TEXT_X, FREQUENCY_TEXT_Y, 60, 16, TFT_DARKGREY);
+    
     display.setTextSize(FREQUENCY_TEXT_SIZE);
-    display.setTextColor(TFT_WHITE, TFT_BLACK);
+    display.setTextColor(TFT_WHITE, TFT_DARKGREY);
     display.setCursor(FREQUENCY_TEXT_X, FREQUENCY_TEXT_Y);
     display.print(Channels::getFrequency(Receiver::activeChannel));
 }
