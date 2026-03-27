@@ -3,17 +3,28 @@
 #include "channels.h"
 #include "ui.h"
 
-#define FREQUENCY_TEXT_SIZE 2 // Bumped from 1 to 2
-#define FREQUENCY_TEXT_X 96   // Shifted right to keep it centered
-#define FREQUENCY_TEXT_Y 6    // Moved down slightly from the top edge
+// Map the missing TFT_eSPI colors used for the channel letters
+#ifndef TFT_ORANGE
+#define TFT_ORANGE  0xFDA0
+#endif
+#ifndef TFT_PURPLE
+#define TFT_PURPLE  0x780F
+#endif
+#ifndef TFT_MAGENTA
+#define TFT_MAGENTA 0xF81F
+#endif
 
-#define CHANNEL_TEXT_SIZE 8   // Massive size 8 text for the main channel!
-#define CHANNEL_TEXT_X 72     // Re-centered for the wider text
-#define CHANENL_TEXT_Y 24     // Pushed down to fill the empty vertical space
+#define FREQUENCY_TEXT_SIZE 2 
+#define FREQUENCY_TEXT_X 96   
+#define FREQUENCY_TEXT_Y 6    
 
-#define BARS_Y 90             // Pushed all the way down to the bottom
-#define BARS_H 40             // Doubled the thickness of the bars (was 20)
-#define BARS_X 44             // Pushed right to make room for larger RX labels
+#define CHANNEL_TEXT_SIZE 8   
+#define CHANNEL_TEXT_X 72     
+#define CHANENL_TEXT_Y 24     
+
+#define BARS_Y 90             
+#define BARS_H 40             
+#define BARS_X 44             
 #define BARS_W (SCREEN_WIDTH - BARS_X - 4)
 
 #define COLOR_RXA TFT_YELLOW
@@ -98,7 +109,6 @@ void StateMachine::SearchStateHandler::drawFrequencyText() {
 void StateMachine::SearchStateHandler::drawScanBar() { }
 
 void StateMachine::SearchStateHandler::drawRssiGraph() {
-    // Dynamically shrink the bars if the menu is open to prevent overlap
     uint16_t activeBarsW = this->menu.isVisible() ? (162 - BARS_X - 2) : BARS_W;
 
     #ifdef USE_DIVERSITY

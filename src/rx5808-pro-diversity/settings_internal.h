@@ -25,15 +25,13 @@
 
 // === Display Modules =========================================================
 
-#ifdef SH1106
-  #define OLED_VCCSTATE SH1106_SWITCHCAPVCC
-  #define OLED_CLASS Adafruit_SH1106
-#else
-  #define OLED_VCCSTATE SSD1306_SWITCHCAPVCC
-  #define OLED_CLASS Adafruit_SSD1306
+#ifdef ADAFRUIT_ST7789_SCREENS
+    #define OLED_FRAMERATE 30
 #endif
 
-#define OLED_FRAMERATE 1000 / 25
+#ifdef OLED_128x64_ADAFRUIT_SCREENS
+    #define OLED_FRAMERATE 30
+#endif
 
 // === Misc ====================================================================
 

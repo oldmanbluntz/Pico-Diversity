@@ -10,7 +10,8 @@
 //
 // =============================================================================
 //ST7735 0.96 inch TFT
-#define TFT_ESPI_SCREENS
+#define ADAFRUIT_ST7789_SCREENS
+
 // SSH1106 needs https://github.com/badzz/Adafruit_SH1106 installed.
 //#define SH1106
 
