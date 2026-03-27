@@ -16,16 +16,23 @@ namespace Ui {
 
     void setup() {
         display.init();
-        display.setRotation(1); // Set to 1 or 3 for landscape depending on your board mount
+        display.setRotation(1); 
 
-        // TFT_eSPI text background rendering
+        // --- DIAGNOSTIC TEST ---
+        // Blast the entire screen memory with color and force it to wait.
+        // If you see these colors, your wiring and SPI are 100% perfect.
+        display.fillScreen(TFT_RED); 
+        delay(4000); 
+        display.fillScreen(TFT_GREEN);
+        delay(4000);
+        // -----------------------
+
         display.setTextColor(TFT_WHITE, TFT_BLACK); 
         display.setTextSize(1);
         display.setTextWrap(false);
-
-        display.fillScreen(TFT_RED); 
+        display.fillScreen(TFT_BLACK); 
     }
-
+    
     void update() {
         if (shouldDisplay) {
             // TFT_eSPI draws directly to the screen by default.
