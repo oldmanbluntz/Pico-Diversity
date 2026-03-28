@@ -117,10 +117,10 @@ void StateMachine::BandScanStateHandler::onUpdateDraw() {
         #endif
     }
 
-    Ui::display.drawRGBBitmap(0, 0, bsCanvas->getBuffer(), SCREEN_WIDTH, SCREEN_HEIGHT);
+    // Render the menu INTO the buffer so it's included when we push the bitmap to the display
+    this->menu.draw(bsCanvas);
 
-    // Render the menu over the buffer
-    this->menu.draw();
+    Ui::display.drawRGBBitmap(0, 0, bsCanvas->getBuffer(), SCREEN_WIDTH, SCREEN_HEIGHT);
 
     Ui::needDisplay();
 }
