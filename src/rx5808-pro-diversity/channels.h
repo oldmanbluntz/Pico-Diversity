@@ -1,16 +1,10 @@
 #ifndef CHANNELS_H
 #define CHANNELS_H
 
-
 #include "settings.h"
 
-
-#ifdef USE_LBAND
-    #define CHANNELS_SIZE 48
-#else
-    #define CHANNELS_SIZE 40
-#endif
-
+// Force the size to 72 for the 9 standard bands
+#define CHANNELS_SIZE 72
 
 namespace Channels {
     const uint16_t getSynthRegisterB(uint8_t index);
@@ -19,6 +13,5 @@ namespace Channels {
     const uint8_t getOrderedIndex(uint8_t index);
     const uint8_t getOrderedIndexFromIndex(uint8_t index);
 }
-
 
 #endif

@@ -2,102 +2,53 @@
 #include "state_menu.h"
 #include "ui.h"
 #include "ui_menu.h"
-// #include "pstr_helper.h" // PICO FIX: Not needed. Strings are read directly.
 
+// Map the missing TFT_eSPI color
+#ifndef TFT_DARKGREY
+#define TFT_DARKGREY 0x7BEF
+#endif
 
-#define TRIANGLE_SIZE 4
-#define TRIANGLE_MARGIN 2
-
-#define GRAPHIC_SIZE 32
-#define GRAPHIC_X SCREEN_WIDTH_MID - (GRAPHIC_SIZE / 2)
-#define GRAPHIC_Y 7
-
-#define TEXT_Y SCREEN_HEIGHT - (CHAR_HEIGHT + 2) * 2
-
-static void drawTriangles();
-static void drawMenuEntry();
-
+// Layout for 3 vertical text boxes
+#define BOX_W 120
+#define BOX_H 20
+#define BOX_X ((SCREEN_WIDTH - BOX_W) / 2)
+#define BOX_SPACING 24
+#define MENU_START_Y 6 
 
 void StateMachine::MenuStateHandler::onInitialDraw() {
     Ui::clear();
-
     drawMenuEntry();
-    drawTriangles();
-
     Ui::needDisplay();
 }
 
 void StateMachine::MenuStateHandler::onUpdateDraw() {
-    Ui::clearRect(
-        0,
-        SCREEN_HEIGHT - (CHAR_HEIGHT + 2) * 2,
-        SCREEN_WIDTH,
-        (CHAR_HEIGHT + 2) * 2
-    );
-
     drawMenuEntry();
     Ui::needDisplay();
 }
 
-
 void StateMachine::MenuStateHandler::drawMenuEntry() {
-    const Ui::MenuItem* item = this->menu.getCurrentItem();
-    
-    // PICO FIX: Removed PSTRtoBuffer_P wrapper.
-    // item->text is a standard pointer directly readable by the Pico.
-    const uint8_t charLen = strlen(item->text);
+    int active = this->menu.getActiveItems();
+    int selected = this->menu.getSelectedItem();
 
-    Ui::display.setTextSize(2);
-    Ui::display.setTextColor(WHITE);
-    Ui::display.setCursor(
-        SCREEN_WIDTH_MID - (charLen * ((CHAR_WIDTH + 1) * 2)) / 2,
-        TEXT_Y
-    );
-    Ui::display.print(item->text);
+    for (int i = 0; i < active; i++) {
+        const Ui::MenuItem* item = this->menu.getItem(i);
+        
+        int y = MENU_START_Y + (i * BOX_SPACING);
 
-    if (item->icon) {
-        Ui::clearRect(
-            GRAPHIC_X,
-            GRAPHIC_Y,
-            GRAPHIC_SIZE,
-            GRAPHIC_SIZE
-        );
+        uint16_t borderColor = (i == selected) ? TFT_GREEN : TFT_DARKGREY;
+        uint16_t textColor = (i == selected) ? TFT_CYAN : TFT_DARKGREY;
+        
+        Ui::display.fillRect(BOX_X, y, BOX_W, BOX_H, TFT_BLACK);
+        Ui::display.drawRect(BOX_X, y, BOX_W, BOX_H, borderColor);
+        
+        const uint8_t charLen = strlen(item->text);
+        int textPixelWidth = charLen * 12; 
+        int textX = BOX_X + ((BOX_W - textPixelWidth) / 2);
+        int textY = y + 3; 
 
-        Ui::display.drawBitmap(
-            GRAPHIC_X,
-            GRAPHIC_Y,
-            item->icon,
-            GRAPHIC_SIZE,
-            GRAPHIC_SIZE,
-            WHITE
-        );
+        Ui::display.setTextSize(2);
+        Ui::display.setTextColor(textColor, TFT_BLACK);
+        Ui::display.setCursor(textX, textY);
+        Ui::display.print(item->text);
     }
-}
-
-static void drawTriangles() {
-    Ui::display.fillTriangle(
-        SCREEN_WIDTH - 1 - (TRIANGLE_SIZE),
-        SCREEN_HEIGHT_MID + TRIANGLE_MARGIN,
-
-        SCREEN_WIDTH - 1 - (TRIANGLE_SIZE / 2),
-        SCREEN_HEIGHT_MID + TRIANGLE_MARGIN + (TRIANGLE_SIZE),
-
-        SCREEN_WIDTH - 1,
-        SCREEN_HEIGHT_MID + TRIANGLE_MARGIN,
-
-        WHITE
-    );
-
-    Ui::display.fillTriangle(
-        SCREEN_WIDTH - 1 - (TRIANGLE_SIZE),
-        SCREEN_HEIGHT_MID - TRIANGLE_MARGIN,
-
-        SCREEN_WIDTH - 1 - (TRIANGLE_SIZE / 2),
-        SCREEN_HEIGHT_MID - TRIANGLE_MARGIN - (TRIANGLE_SIZE),
-
-        SCREEN_WIDTH - 1,
-        SCREEN_HEIGHT_MID - TRIANGLE_MARGIN,
-
-        WHITE
-    );
 }

@@ -1,6 +1,6 @@
 #include <string.h>
 #include <EEPROM.h>
-#include <Arduino.h>
+#include <Arduino.h> // Added for standard definitions
 
 #include "settings.h"
 #include "settings_internal.h"
@@ -8,10 +8,13 @@
 
 #include "timer.h"
 
+
 static Timer saveTimer = Timer(EEPROM_SAVE_TIME);
 static bool isDirty = false;
 
+
 struct EepromSettings EepromSettings;
+
 
 void EepromSettings::update() {
     if (isDirty) {
@@ -25,8 +28,8 @@ void EepromSettings::update() {
 }
 
 void EepromSettings::load() {
-    // PICO FIX: Ensure the 512 byte buffer is pulled from Flash into RAM
-    // EEPROM.begin(512) must have been called in main.cpp first.
+    // PICO NOTE: EEPROM.begin(512) was added to the main .ino setup().
+    // This reads the emulated EEPROM from Flash into RAM.
     EEPROM.get(0, *this);
 
     if (this->magic != EEPROM_MAGIC)
@@ -36,8 +39,9 @@ void EepromSettings::load() {
 void EepromSettings::save() {
     EEPROM.put(0, *this);
     
-    // PICO FIX: Mandatory commit call. 
-    // RP2040 writes to a RAM buffer; this line pushes it to physical Flash.
+    // PICO FIX: Explicitly commit changes to Flash.
+    // The Pico uses a RAM buffer for EEPROM emulation. 
+    // Without commit(), changes are lost on power cycle.
     EEPROM.commit(); 
 }
 
@@ -45,9 +49,10 @@ void EepromSettings::markDirty() {
     isDirty = true;
 }
 
+
 void EepromSettings::initDefaults() {
-    // PICO FIX: Replaced AVR-specific memcpy_P with standard memcpy.
-    // The Pico has a unified memory map where Flash is directly accessible.
+    // PICO FIX: Replaced memcpy_P (AVR specific) with standard memcpy.
+    // The Pico has a unified memory map; Flash is directly readable.
     memcpy(this, &EepromDefaults, sizeof(EepromDefaults));
     this->save();
 }

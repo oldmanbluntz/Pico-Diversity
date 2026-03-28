@@ -38,7 +38,7 @@ namespace StateMachine {
     static StateHandler *getStateHandler(State stateType);
 
 
-    alignas(8) static uint8_t stateBuffer[STATE_BUFFER_SIZE];
+    static uint8_t stateBuffer[STATE_BUFFER_SIZE];
     static StateHandler* currentHandler = nullptr;
     State currentState = State::BOOT;
     State lastState = currentState;

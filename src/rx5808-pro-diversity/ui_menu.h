@@ -3,9 +3,7 @@
 
 #include "ui.h"
 
-
-#define MENU_ITEMS_MAX 4
-
+#define MAIN_MENU_ITEMS_MAX 4
 
 namespace Ui {
     typedef void(*MenuHandler)();
@@ -27,17 +25,21 @@ namespace Ui {
 
             MenuItem* getCurrentItem();
 
+            // --- NEW GETTERS FOR TFT REDESIGN ---
+            int getActiveItems() const { return activeItems; }
+            int getSelectedItem() const { return selectedItem; }
+            const MenuItem* getItem(int index) const { return &menuItems[index]; }
+
             void selectNextItem();
             void selectPreviousItem();
             void activateItem();
 
         private:
-            Ui::MenuItem menuItems[MENU_ITEMS_MAX];
+            Ui::MenuItem menuItems[MAIN_MENU_ITEMS_MAX];
 
             int activeItems = 0;
             int selectedItem = 0;
     };
 }
-
 
 #endif

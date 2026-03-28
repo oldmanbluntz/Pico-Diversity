@@ -46,10 +46,11 @@ namespace StateMachine {
                 CHANNEL
             };
 
-
             bool manual = false;
             ScanOrder order = ScanOrder::FREQUENCY;
             uint8_t orderedChanelIndex = 0;
+
+            void hideMenu() { this->menu.hide(); } // ADD THIS LINE
 
             void onEnter();
             void onUpdate();

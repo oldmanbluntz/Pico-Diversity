@@ -1,48 +1,48 @@
 #ifndef UI_STATE_MENU_H
 #define UI_STATE_MENU_H
 
-#include <stdint.h> // PICO FIX: Required for int8_t type
+#include <stdint.h>
 #include "buttons.h"
 #include "ui.h"
 
-
-#define MENU_ITEMS_MAX 4
-
+#define STATE_MENU_ITEMS_MAX 6
 
 namespace Ui {
     class StateMenuHelper {
         public:
-            typedef const unsigned char* (*MenuIcon)(void* state);
+            typedef const char* (*MenuText)(void* state);
             typedef void (*MenuHandler)(void* state);
 
-
             struct StateMenuItem {
-                MenuIcon icon = nullptr;
+                MenuText textFn = nullptr;
                 MenuHandler handler = nullptr;
             };
-
 
             StateMenuHelper(void* state) { this->state = state; }
             void draw();
             bool handleButtons(Button button, Buttons::PressType pressType);
-            bool isVisible() { return this->visible; };
+            bool isVisible() { return this->visible; }
+            
+            void hide() { 
+                this->visible = false; 
+                Ui::needFullRedraw(); 
+            }
+
             void addItem(
-                const MenuIcon icon,
+                const MenuText textFn,
                 const MenuHandler handler
             );
 
-
         private:
-            StateMenuItem menuItems[MENU_ITEMS_MAX];
+            StateMenuItem menuItems[STATE_MENU_ITEMS_MAX];
 
             void *state = nullptr;
             int activeItems = 0;
             int selectedItem = 0;
             bool visible = false;
-
-            int8_t slideX = 0;
+            
+            // NO SLIDING VARIABLES ALLOWED HERE
     };
 }
-
 
 #endif
