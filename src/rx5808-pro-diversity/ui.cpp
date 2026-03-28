@@ -27,12 +27,13 @@ namespace Ui {
         // FORCE the RP2040 to route the SPI1 bus to your specific pins
         SPI1.setSCK(TFT_SCLK);
         SPI1.setTX(TFT_MOSI);
+        SPI1.setRX(8);
         SPI1.begin();
 
         display.init(135, 240);
         
         // FIX: Shift the memory offset to match generic 1.14" screens
-        display.setRotation(1); 
+        display.setRotation(3); 
 
         // --- DIAGNOSTIC TEST ---
         display.fillScreen(TFT_RED); 

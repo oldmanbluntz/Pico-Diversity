@@ -95,10 +95,10 @@ void StateMachine::SearchStateHandler::drawChannelText() {
     display.setCursor(CHANNEL_TEXT_X, CHANENL_TEXT_Y);
     
     display.setTextColor(letterColor, TFT_DARKGREY);
-    display.print(letter);
+    display.print(String(letter)); // Cast to String to prevent GFX pointer crash
     
     display.setTextColor(TFT_WHITE, TFT_DARKGREY);
-    display.print(number);
+    display.print(String(number)); // Cast to String
 }
 
 void StateMachine::SearchStateHandler::drawFrequencyText() {
