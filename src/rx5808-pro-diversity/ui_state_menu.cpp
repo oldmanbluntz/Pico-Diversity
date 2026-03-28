@@ -4,8 +4,9 @@
 using Ui::display;
 using Ui::StateMenuHelper;
 
-#define MENU_W 56
-#define MENU_X 192 
+// Increased width to 64 to prevent text wrap on "Settings" and "Bandscan"
+#define MENU_W 64
+#define MENU_X (SCREEN_WIDTH - MENU_W) 
 #define MENU_H 135
 #define MENU_ITEM_H 14
 
