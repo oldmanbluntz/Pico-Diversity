@@ -13,8 +13,7 @@ Will possibly be making sellable units.
 2. [Overview](#overview)
 3. [Hardware](#hardware)
 4. [Firmware](#firmware)
-5. [Contributing](#contributing)
-6. [License](#license)
+5. [License](#license)
 
 
 # Features
@@ -56,10 +55,6 @@ This project is centered around the FS58R3MW 5.8GHz receiver module which can be
 
 # Firmware
 The firmware is constantly being improved.
-# Contributing
-Any contributions are welcome!
-
-Please follow [CONTRIBUTING.md](CONTRIBUTING.md) for standard practices regarding this repo.
 
 
 ## Recognition
