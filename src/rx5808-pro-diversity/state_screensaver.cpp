@@ -35,81 +35,77 @@ Point3D rotateY(Point3D p, float angle) {
     return rotated;
 }
 
-// Global angle for the screensaver animation
+const float CAMERA_TILT = 0.4; // Radians. 0.4 is roughly a 23-degree downward tilt.
+
+Point3D rotateX(Point3D p, float angle) {
+    Point3D rotated;
+    rotated.x = p.x;
+    rotated.y = p.y * cos(angle) - p.z * sin(angle);
+    rotated.z = p.y * sin(angle) + p.z * cos(angle);
+    return rotated;
+}
+
 static float currentAngle = 0.0;
 
+// Allocate a pointer for our 64KB Double Buffer Canvas
+static GFXcanvas16* canvas = nullptr;
+
 // ==============================================================================
-// 2. 3D Drawing Functions
+// 2. 3D Drawing Functions (Now drawing to the Canvas!)
 // ==============================================================================
-void drawWireframeBox(float angle) {
-    // Equalized dimensions for a perfect 90x90x90 cube
-    float w = 45.0; // Width
-    float h = 45.0; // Height 
-    float d = 45.0; // Depth 
+void drawWireframeBox(float angle, uint16_t color) {
+    float w = 45.0, h = 45.0, d = 45.0;
 
     Point3D corners[8] = {
-        // Front Face (0: Top Right, 1: Top Left, 2: Bottom Left, 3: Bottom Right)
         { w,  h,  d}, {-w,  h,  d}, {-w, -h,  d}, { w, -h,  d},
-        // Back Face (4: Top Right, 5: Top Left, 6: Bottom Left, 7: Bottom Right)
         { w,  h, -d}, {-w,  h, -d}, {-w, -h, -d}, { w, -h, -d}
     };
 
     Point2D p[8];
     for (int i = 0; i < 8; i++) {
-        p[i] = project(rotateY(corners[i], angle));
+        Point3D rotated = rotateY(corners[i], angle);
+        rotated = rotateX(rotated, CAMERA_TILT); // Apply downward pitch
+        p[i] = project(rotated);
     }
 
-    uint16_t boxColor = TFT_DARKGREY; 
+    // Front Face
+    canvas->drawLine(p[0].x, p[0].y, p[1].x, p[1].y, color);
+    canvas->drawLine(p[1].x, p[1].y, p[2].x, p[2].y, color);
+    canvas->drawLine(p[2].x, p[2].y, p[3].x, p[3].y, color);
+    canvas->drawLine(p[3].x, p[3].y, p[0].x, p[0].y, color);
     
-    // 1. Draw Top Face
-    Ui::display.drawLine(p[2].x, p[2].y, p[3].x, p[3].y, boxColor);
-    Ui::display.drawLine(p[6].x, p[6].y, p[7].x, p[7].y, boxColor);
-    Ui::display.drawLine(p[2].x, p[2].y, p[6].x, p[6].y, boxColor);
-    Ui::display.drawLine(p[3].x, p[3].y, p[7].x, p[7].y, boxColor);
-
-    // 2. Draw Bottom Face
-    Ui::display.drawLine(p[0].x, p[0].y, p[1].x, p[1].y, boxColor);
-    Ui::display.drawLine(p[4].x, p[4].y, p[5].x, p[5].y, boxColor);
-    Ui::display.drawLine(p[0].x, p[0].y, p[4].x, p[4].y, boxColor);
-    Ui::display.drawLine(p[1].x, p[1].y, p[5].x, p[5].y, boxColor);
+    // Back Face
+    canvas->drawLine(p[4].x, p[4].y, p[5].x, p[5].y, color);
+    canvas->drawLine(p[5].x, p[5].y, p[6].x, p[6].y, color);
+    canvas->drawLine(p[6].x, p[6].y, p[7].x, p[7].y, color);
+    canvas->drawLine(p[7].x, p[7].y, p[4].x, p[4].y, color);
     
-    int stepSize = 4; 
-
-    Ui::drawDashedVLine(p[0].x, min(p[0].y, p[3].y), abs(p[3].y - p[0].y), stepSize); // Front Right
-    Ui::drawDashedVLine(p[1].x, min(p[1].y, p[2].y), abs(p[2].y - p[1].y), stepSize); // Front Left
-    Ui::drawDashedVLine(p[4].x, min(p[4].y, p[7].y), abs(p[7].y - p[4].y), stepSize); // Back Right
-    Ui::drawDashedVLine(p[5].x, min(p[5].y, p[6].y), abs(p[6].y - p[5].y), stepSize); // Back Left
+    // Connecting Lines
+    canvas->drawLine(p[0].x, p[0].y, p[4].x, p[4].y, color);
+    canvas->drawLine(p[1].x, p[1].y, p[5].x, p[5].y, color);
+    canvas->drawLine(p[2].x, p[2].y, p[6].x, p[6].y, color);
+    canvas->drawLine(p[3].x, p[3].y, p[7].x, p[7].y, color);
 }
 
-void draw3DGrid(float angle) {
-    uint16_t dotColor = TFT_LIGHTGREY; 
-
-    // Scaled grid loops to match the new 90x90x90 cube bounds
-    // We step by 45.0 to give us a clean 3x3x3 grid of dots (27 dots total)
+void draw3DGrid(float angle, uint16_t color) {
     for (float x = -45.0; x <= 45.0; x += 45.0) {
         for (float y = -45.0; y <= 45.0; y += 45.0) {
             for (float z = -45.0; z <= 45.0; z += 45.0) {
-                
                 Point3D p = { x, y, z };
                 p = rotateY(p, angle);
+                p = rotateX(p, CAMERA_TILT); // Apply downward pitch
                 Point2D proj = project(p);
-                
-                Ui::display.fillRect(proj.x, proj.y, 2, 2, dotColor);
+                canvas->fillRect(proj.x, proj.y, 2, 2, color);
             }
         }
     }
 }
 
-void drawSpinningGraph(const uint8_t rxDataA[], const uint8_t rxDataB[], int dataSize) {
-    drawWireframeBox(currentAngle);
-    draw3DGrid(currentAngle);
+void drawGraphData(float angle, const uint8_t rxDataA[], const uint8_t rxDataB[], int dataSize, uint16_t colorA, uint16_t colorB) {
     Point2D lastProjA, lastProjB;
 
     for (int i = 0; i < dataSize; i++) {
-        // Squished the X scaling to fit the new width of 90 (offset -45)
         float xPos = ((float)i / (float)(dataSize - 1)) * 90.0 - 45.0;
-        
-        // Height scaling stays at 90 to match the cube
         float yPosA = 45.0 - ((float)rxDataA[i] / 100.0) * 90.0;
         float yPosB = 0;
         
@@ -117,20 +113,22 @@ void drawSpinningGraph(const uint8_t rxDataA[], const uint8_t rxDataB[], int dat
             yPosB = 45.0 - ((float)rxDataB[i] / 100.0) * 90.0;
         #endif
 
-        // Pushed depth out to +/- 20 to take advantage of the deeper cube space!
         Point3D pA = { xPos, yPosA, 20.0 };
         Point3D pB = { xPos, yPosB, -20.0 };
 
-        pA = rotateY(pA, currentAngle);
-        pB = rotateY(pB, currentAngle);
+        pA = rotateY(pA, angle);
+        pB = rotateY(pB, angle);
+
+        pA = rotateX(pA, CAMERA_TILT); // Apply downward pitch
+        pB = rotateX(pB, CAMERA_TILT); // Apply downward pitch
 
         Point2D projA = project(pA);
         Point2D projB = project(pB);
 
         if (i > 0) {
-            Ui::display.drawLine(lastProjA.x, lastProjA.y, projA.x, projA.y, TFT_YELLOW);
+            canvas->drawLine(lastProjA.x, lastProjA.y, projA.x, projA.y, colorA);
             #ifdef USE_DIVERSITY
-                Ui::display.drawLine(lastProjB.x, lastProjB.y, projB.x, projB.y, TFT_CYAN);
+                canvas->drawLine(lastProjB.x, lastProjB.y, projB.x, projB.y, colorB);
             #endif
         }
 
@@ -145,35 +143,47 @@ void drawSpinningGraph(const uint8_t rxDataA[], const uint8_t rxDataB[], int dat
 
 void StateMachine::ScreensaverStateHandler::onEnter() {
     currentAngle = 0.0;
+
+    // Dynamically allocate the 64KB Canvas in memory the first time we enter the screensaver
+    if (!canvas) {
+        canvas = new GFXcanvas16(SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
 }
 
 void StateMachine::ScreensaverStateHandler::onUpdate() {
-    // Advance the rotation slightly every frame
-    currentAngle += 0.05; 
-    if (currentAngle > 6.28) currentAngle = 0; 
-
-    // Tell the UI it needs to draw the next frame of the animation
     Ui::needUpdate(); 
 }
 
 void StateMachine::ScreensaverStateHandler::onButtonChange(Button button, Buttons::PressType pressType) {
-    // Any button press exits the screensaver
     StateMachine::switchState(StateMachine::lastState);
 }
 
 void StateMachine::ScreensaverStateHandler::onInitialDraw() {
-    Ui::clear();
-    
-    #ifdef USE_DIVERSITY
-        drawSpinningGraph(Receiver::rssiALast, Receiver::rssiBLast, RECEIVER_LAST_DATA_SIZE);
-    #else
-        // Fallback if diversity is disabled
-        drawSpinningGraph(Receiver::rssiALast, Receiver::rssiALast, RECEIVER_LAST_DATA_SIZE); 
-    #endif
-    
     Ui::needDisplay();
 }
 
 void StateMachine::ScreensaverStateHandler::onUpdateDraw() {
-    this->onInitialDraw();
+    if (!canvas) return; // Safety check
+
+    // 1. Wipe the invisible canvas clean
+    canvas->fillScreen(TFT_BLACK);
+
+    // 2. Advance rotation math
+    currentAngle += 0.05; 
+    if (currentAngle > 6.28) currentAngle = 0; 
+
+    // 3. Draw the new frame completely onto the invisible canvas
+    drawWireframeBox(currentAngle, TFT_RED);
+    draw3DGrid(currentAngle, TFT_BLUE);
+    
+    #ifdef USE_DIVERSITY
+        drawGraphData(currentAngle, Receiver::rssiALast, Receiver::rssiBLast, RECEIVER_LAST_DATA_SIZE, TFT_GREEN, TFT_ORANGE);
+    #else
+        drawGraphData(currentAngle, Receiver::rssiALast, Receiver::rssiALast, RECEIVER_LAST_DATA_SIZE, TFT_YELLOW, TFT_YELLOW);
+    #endif
+
+    // 4. Blast the fully rendered canvas to the physical screen in one shot!
+    Ui::display.drawRGBBitmap(0, 0, canvas->getBuffer(), SCREEN_WIDTH, SCREEN_HEIGHT);
+    
+    Ui::needDisplay();
 }

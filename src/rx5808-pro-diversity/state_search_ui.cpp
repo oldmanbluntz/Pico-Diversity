@@ -32,20 +32,20 @@
 using Ui::display;
 
 void StateMachine::SearchStateHandler::onInitialDraw() {
-    // PROOF OF LIFE: Wipe the screen to DARK GREY instead of BLACK.
-    display.fillScreen(TFT_DARKGREY);
+    // Wipe the screen to BLACK
+    display.fillScreen(TFT_BLACK);
 
     display.setTextSize(2);
     #ifdef USE_DIVERSITY
-        display.setTextColor(COLOR_RXA, TFT_DARKGREY);
+        display.setTextColor(COLOR_RXA, TFT_BLACK);
         display.setCursor(2, BARS_Y);
         display.print("RXA");
         
-        display.setTextColor(COLOR_RXB, TFT_DARKGREY);
+        display.setTextColor(COLOR_RXB, TFT_BLACK);
         display.setCursor(2, BARS_Y + (BARS_H / 2));
         display.print("RXB");
     #else
-        display.setTextColor(COLOR_RXA, TFT_DARKGREY);
+        display.setTextColor(COLOR_RXA, TFT_BLACK);
         display.setCursor(2, BARS_Y + (BARS_H / 4));
         display.print("RX");
     #endif
@@ -89,23 +89,23 @@ void StateMachine::SearchStateHandler::drawChannelText() {
         default:  letterColor = TFT_WHITE; break;
     }
 
-    display.fillRect(CHANNEL_TEXT_X, CHANENL_TEXT_Y, 96, 64, TFT_DARKGREY);
+    // REMOVED fillRect to prevent flickering
 
     display.setTextSize(CHANNEL_TEXT_SIZE);
     display.setCursor(CHANNEL_TEXT_X, CHANENL_TEXT_Y);
     
-    display.setTextColor(letterColor, TFT_DARKGREY);
+    display.setTextColor(letterColor, TFT_BLACK);
     display.print(String(letter)); // Cast to String to prevent GFX pointer crash
     
-    display.setTextColor(TFT_WHITE, TFT_DARKGREY);
+    display.setTextColor(TFT_WHITE, TFT_BLACK);
     display.print(String(number)); // Cast to String
 }
 
 void StateMachine::SearchStateHandler::drawFrequencyText() {
-    display.fillRect(FREQUENCY_TEXT_X, FREQUENCY_TEXT_Y, 60, 16, TFT_DARKGREY);
+    // REMOVED fillRect to prevent flickering
     
     display.setTextSize(FREQUENCY_TEXT_SIZE);
-    display.setTextColor(TFT_WHITE, TFT_DARKGREY);
+    display.setTextColor(TFT_WHITE, TFT_BLACK);
     display.setCursor(FREQUENCY_TEXT_X, FREQUENCY_TEXT_Y);
     display.print(Channels::getFrequency(Receiver::activeChannel));
 }

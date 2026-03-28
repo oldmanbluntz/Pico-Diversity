@@ -26,7 +26,7 @@
 // === Display Modules =========================================================
 
 #ifdef ADAFRUIT_ST7789_SCREENS
-    #define OLED_FRAMERATE 30
+    #define OLED_FRAMERATE 60
 #endif
 
 #ifdef OLED_128x64_ADAFRUIT_SCREENS
