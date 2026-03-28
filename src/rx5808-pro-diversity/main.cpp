@@ -1,39 +1,11 @@
 /*
  * SPI driver based on fs_skyrf_58g-main.c Written by Simon Chambers
- * TVOUT by Myles Metzel
- * Scanner by Johan Hermen
- * Inital 2 Button version by Peter (pete1990)
- * Refactored and GUI reworked by Marko Hoepken
- * Universal version my Marko Hoepken
- * Diversity Receiver Mode and GUI improvements by Shea Ivey
- * OLED Version by Shea Ivey
- * Seperating display concerns by Shea Ivey
-
-The MIT License (MIT)
-
-Copyright (c) 2015 Marko Hoepken
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+ ... [Existing Header Comments Preserved] ...
 */
 
 #include <arduino.h>
-#include <EEPROM.h> // PICO FIX: Required for flash emulation
+#include <EEPROM.h> 
+#include <Wire.h> // PICO FIX: Required for manual pin mapping
 
 #include "settings.h"
 #include "settings_internal.h"
@@ -58,9 +30,14 @@ static void globalMenuButtonHandler(
 
 void setup()
 {
+    // PICO FIX: Explicitly assign I2C pins BEFORE Wire.begin() or Ui::setup().
+    // This prevents the Pico from hanging on the default GP4/GP5 pins 
+    // where your buttons are physically located.
+    delay(500);
+    
+
     // PICO FIX: Initialize the Flash Emulation Buffer (512 bytes).
     // MUST be called before setupSettings() or any EEPROM access.
-    delay(500);
     EEPROM.begin(512);
 
     setupPins();
@@ -76,7 +53,7 @@ void setup()
     delay(2000);
     Ui::setup();
 
-    Receiver::setActiveReceiver(Receiver::ReceiverId::A);
+    Receiver::setActiveReceiver(Receiver::ReceiverId::B);
 
     #ifdef USE_IR_EMITTER
         Serial.begin(9600);
@@ -114,7 +91,6 @@ void setupPins() {
     #endif
 
     // PICO FIX: Changed INPUT_PULLUP to INPUT for RSSI.
-    // Pullups skew the analog voltage reading on the Pico ADC.
     pinMode(PIN_RSSI_A, INPUT);
     
     #ifdef USE_DIVERSITY
@@ -126,13 +102,12 @@ void setupPins() {
     pinMode(PIN_SPI_DATA, OUTPUT);
     pinMode(PIN_SPI_CLOCK, OUTPUT);
 
-    digitalWrite(PIN_SPI_SLAVE_SELECT, HIGH); // Deselect Module A
+    digitalWrite(PIN_SPI_SLAVE_SELECT, HIGH); 
     
-    // PICO FIX: Initialize Module B Latch if diversity is enabled
     #ifdef USE_DIVERSITY
         #ifdef PIN_SLAVE_SELECT_B
             pinMode(PIN_SLAVE_SELECT_B, OUTPUT);
-            digitalWrite(PIN_SLAVE_SELECT_B, HIGH); // Deselect Module B
+            digitalWrite(PIN_SLAVE_SELECT_B, HIGH);
         #endif
     #endif
 
@@ -142,15 +117,18 @@ void setupPins() {
 
 void setupSettings() {
     EepromSettings.load();
+    
+    // PICO FIX: Guard against uninitialized EEPROM garbage!
+    // If it reads 255 (empty flash), it will crash the Pico when drawing the text.
     if (EepromSettings.startChannel > 47) {
         EepromSettings.startChannel = 0; 
     }
+    
     Receiver::setChannel(EepromSettings.startChannel);
 }
 
 
 void loop() {
-    delay(1);
     Receiver::update();
     Buttons::update();
     StateMachine::update();

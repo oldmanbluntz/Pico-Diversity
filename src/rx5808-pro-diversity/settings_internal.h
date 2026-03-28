@@ -7,7 +7,7 @@
 // === EEPROM ==================================================================
 
 // This should be incremented after every EEPROM change.
-#define EEPROM_MAGIC 0x00000045
+#define EEPROM_MAGIC 0x00000012
 
 // === Receiver Modules =========================================================
 
@@ -25,13 +25,15 @@
 
 // === Display Modules =========================================================
 
-#ifdef ADAFRUIT_ST7789_SCREENS
-    #define OLED_FRAMERATE 30
+#ifdef SH1106
+  #define OLED_VCCSTATE SH1106_SWITCHCAPVCC
+  #define OLED_CLASS Adafruit_SH1106
+#else
+  #define OLED_VCCSTATE SSD1306_SWITCHCAPVCC
+  #define OLED_CLASS Adafruit_SSD1306
 #endif
 
-#ifdef OLED_128x64_ADAFRUIT_SCREENS
-    #define OLED_FRAMERATE 30
-#endif
+#define OLED_FRAMERATE 1000 / 25
 
 // === Misc ====================================================================
 

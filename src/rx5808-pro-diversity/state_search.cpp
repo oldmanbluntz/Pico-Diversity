@@ -10,25 +10,51 @@
 #include "buttons.h"
 #include "ui.h"
 
+// PICO FIX: PROGMEM removed. Const arrays are automatically stored in Flash on ARM.
+
 using StateMachine::SearchStateHandler;
 
-// --- DYNAMIC TEXT LABELS ---
-static const char* menuModeText(void* state) {
+
+static const unsigned char autoIcon[] = {
+    0x00, 0x00, 0x1E, 0x00, 0x3F, 0x00, 0x73, 0x80, 0x61, 0x98, 0x7F, 0x84, 0x7F, 0x82, 0x61, 0x82,
+    0x61, 0x80, 0x61, 0x80, 0x61, 0xA2, 0x08, 0x36, 0x08, 0x2A, 0x04, 0x22, 0x03, 0x22, 0x00, 0x00
+};
+
+static const unsigned char manualIcon[] = {
+    0x00, 0x00, 0x60, 0xC0, 0x71, 0xC0, 0x7B, 0xC0, 0x7F, 0xD8, 0x7F, 0xC4, 0x6E, 0xC2, 0x64, 0xC2,
+    0x60, 0xC0, 0x60, 0xC0, 0x60, 0xC0, 0x08, 0x0C, 0x08, 0x12, 0x04, 0x1E, 0x03, 0x12, 0x00, 0x00
+};
+
+static const unsigned char channelOrderIcon[] = {
+    0x00, 0x00, 0x00, 0x00, 0x33, 0x9C, 0x4A, 0x52, 0x7B, 0x9C, 0x4A, 0x52, 0x4B, 0x92, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x10, 0x08, 0x30, 0x0C, 0x7E, 0x7E, 0x30, 0x0C, 0x10, 0x08, 0x00, 0x00
+};
+
+static const unsigned char freqOrderIcon[] = {
+    0x00, 0x00, 0x19, 0x80, 0x19, 0x80, 0x19, 0x80, 0x1F, 0xB8, 0x1F, 0x88, 0x19, 0x90, 0x19, 0xA0,
+    0x19, 0xB8, 0x00, 0x00, 0x10, 0x08, 0x30, 0x0C, 0x7E, 0x7E, 0x30, 0x0C, 0x10, 0x08, 0x00, 0x00
+};
+
+
+static const unsigned char* menuModeIcon(void* state) {
     SearchStateHandler* search = static_cast<SearchStateHandler*>(state);
-    return search->manual ? "Manual" : "Auto"; 
+    return search->manual ? manualIcon : autoIcon;
 }
 
-static const char* menuOrderText(void* state) {
+static const unsigned char* menuOrderIcon(void* state) {
     SearchStateHandler* search = static_cast<SearchStateHandler*>(state);
-    return search->order == SearchStateHandler::ScanOrder::FREQUENCY ? "By Freq" : "By Chan"; 
+    switch (search->order) {
+        case SearchStateHandler::ScanOrder::FREQUENCY:
+            return freqOrderIcon;
+            break;
+
+        case SearchStateHandler::ScanOrder::CHANNEL:
+            return channelOrderIcon;
+            break;
+    }
+    return freqOrderIcon; // Fallback to silence compiler warnings
 }
 
-static const char* bandscanText(void*) { return "Bandscan"; }  // Restored full word
-static const char* settingsText(void*) { return "Settings"; }  // Restored full word
-static const char* backText(void*) { return "Back"; }
-
-
-// --- HANDLERS ---
 static void menuModeHandler(void* state) {
     SearchStateHandler* search = static_cast<SearchStateHandler*>(state);
     search->manual = !search->manual;
@@ -41,37 +67,23 @@ static void menuOrderHandler(void* state) {
     SearchStateHandler* search = static_cast<SearchStateHandler*>(state);
     if (search->order == SearchStateHandler::ScanOrder::FREQUENCY) {
         search->order = SearchStateHandler::ScanOrder::CHANNEL;
-        search->orderedChanelIndex = Channels::getOrderedIndex(search->orderedChanelIndex);
+        search->orderedChanelIndex =
+            Channels::getOrderedIndex(search->orderedChanelIndex);
         EepromSettings.searchOrderByChannel = true;
     } else {
         search->order = SearchStateHandler::ScanOrder::FREQUENCY;
-        search->orderedChanelIndex = Channels::getOrderedIndexFromIndex(search->orderedChanelIndex);
+        search->orderedChanelIndex =
+            Channels::getOrderedIndexFromIndex(search->orderedChanelIndex);
         EepromSettings.searchOrderByChannel = false;
     }
+
     EepromSettings.markDirty();
 }
 
-static void bandscanHandler(void* state) {
-    StateMachine::switchState(StateMachine::State::BANDSCAN);
-}
 
-static void settingsHandler(void* state) {
-    StateMachine::switchState(StateMachine::State::SETTINGS);
-}
-
-static void backHandler(void* state) {
-    SearchStateHandler* search = static_cast<SearchStateHandler*>(state);
-    search->hideMenu(); 
-}
-
-// --- STATE LOGIC ---
 void SearchStateHandler::onEnter() {
-    // Register all 5 menu items
-    menu.addItem(menuModeText, menuModeHandler);
-    menu.addItem(menuOrderText, menuOrderHandler);
-    menu.addItem(bandscanText, bandscanHandler);
-    menu.addItem(settingsText, settingsHandler);
-    menu.addItem(backText, backHandler);
+    menu.addItem(menuModeIcon, menuModeHandler);
+    menu.addItem(menuOrderIcon, menuOrderHandler);
 
     this->manual = EepromSettings.searchManual;
     this->order = EepromSettings.searchOrderByChannel ?
@@ -119,7 +131,8 @@ void SearchStateHandler::onUpdateAuto() {
             orderedChanelIndex = peakChannel;
             Receiver::setChannel(Channels::getOrderedIndex(peakChannel));
 
-            EepromSettings.startChannel = Channels::getOrderedIndex(peakChannel);
+            EepromSettings.startChannel =
+                Channels::getOrderedIndex(peakChannel);
             EepromSettings.markDirty();
 
             scanningPeak = false;
@@ -142,7 +155,8 @@ void SearchStateHandler::onUpdateAuto() {
                 else if (orderedChanelIndex >= CHANNELS_SIZE)
                     orderedChanelIndex = 0;
 
-                Receiver::setChannel(Channels::getOrderedIndex(orderedChanelIndex));
+                Receiver::setChannel(
+                    Channels::getOrderedIndex(orderedChanelIndex));
 
                 if (forceNext)
                     forceNext = false;
@@ -151,20 +165,30 @@ void SearchStateHandler::onUpdateAuto() {
     }
 }
 
-void SearchStateHandler::onButtonChange(Button button, Buttons::PressType pressType) {
+void SearchStateHandler::onButtonChange(
+    Button button,
+    Buttons::PressType pressType
+) {
     if (this->menu.handleButtons(button, pressType))
         return;
 
     if (!this->manual) {
-        if (pressType != Buttons::PressType::SHORT || button == Button::MODE) {
+        if (
+            pressType != Buttons::PressType::SHORT ||
+            button == Button::MODE
+        ) {
             return;
         }
 
         scanning = true;
         forceNext = true;
-        direction = button == Button::UP ? ScanDirection::UP : ScanDirection::DOWN;
+        direction = button == Button::UP ?
+            ScanDirection::UP : ScanDirection::DOWN;
     } else {
-        if (pressType != Buttons::PressType::SHORT && pressType != Buttons::PressType::HOLDING) {
+        if (
+            pressType != Buttons::PressType::SHORT &&
+            pressType != Buttons::PressType::HOLDING
+        ) {
             return;
         }
 

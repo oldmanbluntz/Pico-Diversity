@@ -9,8 +9,6 @@
 // supported.
 //
 // =============================================================================
-//ST7735 0.96 inch TFT
-#define ADAFRUIT_ST7789_SCREENS
 
 // SSH1106 needs https://github.com/badzz/Adafruit_SH1106 installed.
 //#define SH1106
@@ -24,7 +22,7 @@
 //#ifdef OLED_128x64_ADAFRUIT_SCREENS
 //    #define OLED_ADDRESS 0x3C // I2C address for display (0x3C or 0x3D, usually)
 //#endif
-
+#define TFT_135x240_SCREENS
 // === Receiver Module =========================================================
 //
 // Select which receiever you are using. Required for time tuning.
@@ -110,8 +108,8 @@
 // --- DISPLAY (I2C) ---
 // On Pico, default I2C0 is GP0/GP1, but you can define others here.
 // You must call Wire.setSDA/SCL in setup() if changing these from defaults.
-//#define PIN_OLED_SDA      0   // GP0
-//#define PIN_OLED_SCL      1   // GP1
+#define PIN_OLED_SDA      0   // GP0
+#define PIN_OLED_SCL      1   // GP1
 
 
 #ifdef USE_VOLTAGE_MONITORING
@@ -128,7 +126,7 @@
 
     // How long (ms) the RSSI strength has to have a greater difference than the
     // above before switching.
-    #define DIVERSITY_HYSTERESIS_PERIOD 50
+    #define DIVERSITY_HYSTERESIS_PERIOD 100
 #endif
 
 // === Voltage Monitoring ======================================================

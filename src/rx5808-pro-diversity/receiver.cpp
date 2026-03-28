@@ -64,15 +64,14 @@ namespace Receiver {
     }
 
     uint16_t updateRssi() {
-        // PICO FIX: Removed the >> 2 bitshift to prevent crushing the ADC resolution
-        // which was causing the massive potentiometer deadzone.
+        // PICO FIX: Bit-shift (>> 2) converts 12-bit (4096) to 10-bit (1024)
         
         analogRead(PIN_RSSI_A); // Fake read to let ADC settle
-        rssiARaw = analogRead(PIN_RSSI_A); 
+        rssiARaw = analogRead(PIN_RSSI_A) >> 2; 
 
         #ifdef USE_DIVERSITY
             analogRead(PIN_RSSI_B);
-            rssiBRaw = analogRead(PIN_RSSI_B);
+            rssiBRaw = analogRead(PIN_RSSI_B) >> 2;
         #endif
 
         rssiA = constrain(
