@@ -2,10 +2,9 @@
 #define STATE_BANDSCAN_H
 
 #include <stdint.h>
-
 #include "channels.h"
 #include "state.h"
-#include "ui_state_menu.h" // Added to support the slide-out menu
+#include "ui_state_menu.h" //
 
 namespace StateMachine {
     class BandScanStateHandler : public StateMachine::StateHandler {
@@ -13,17 +12,19 @@ namespace StateMachine {
             uint8_t orderedChanelIndex = 0;
             uint8_t lastChannelIndex = 0;
             
-            // Track Receiver A and B separately for the color graph
             uint8_t rssiDataA[CHANNELS_SIZE] = { 0 };
             
             #ifdef USE_DIVERSITY
                 uint8_t rssiDataB[CHANNELS_SIZE] = { 0 };
             #endif
 
-            // The slide-out menu object
-            Ui::StateMenu menu;
+            // CORRECTED: Use the actual class name from ui_state_menu.h
+            Ui::StateMenuHelper menu; 
 
         public:
+            // The constructor must initialize the StateMenuHelper with 'this'
+            BandScanStateHandler() : menu(this) {}
+
             void onEnter();
             void onExit();
             void onUpdate();
@@ -31,7 +32,6 @@ namespace StateMachine {
             void onInitialDraw();
             void onUpdateDraw();
             
-            // Added to intercept menu button presses
             void onButtonChange(Button button, Buttons::PressType pressType); 
     };
 }

@@ -172,6 +172,8 @@ static void globalMenuButtonHandler(
     Button button,
     Buttons::PressType pressType
 ) {
+    // Global 2-second hold menu disabled to favor new slide-out menu
+    /*
     if (
         StateMachine::currentState != StateMachine::State::MENU &&
         button == Button::MODE &&
@@ -179,4 +181,5 @@ static void globalMenuButtonHandler(
     ) {
         StateMachine::switchState(StateMachine::State::MENU);
     }
+    */
 }
