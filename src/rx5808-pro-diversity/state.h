@@ -1,11 +1,13 @@
 #ifndef STATE_H
 #define STATE_H
 
+
 #include <stdint.h>
 #include "buttons.h"
 
+
 namespace StateMachine {
-    #define STATE_COUNT 8
+    #define STATE_COUNT 7
     enum class State : uint8_t {
         BOOT,
         SEARCH,
@@ -14,7 +16,6 @@ namespace StateMachine {
         MENU,
         SETTINGS,
         SETTINGS_RSSI,
-        SETTINGS_CUSTOM
     };
 
     class StateHandler {
@@ -39,5 +40,6 @@ namespace StateMachine {
 
     void switchState(State newState);
 }
+
 
 #endif

@@ -1,12 +1,14 @@
 #ifndef EEPROM_SETTINGS_H
 #define EEPROM_SETTINGS_H
 
+
 #include <stdint.h>
 // #include <avr/pgmspace.h> // PICO FIX: Removed
 
 #include "settings.h"
 #include "settings_internal.h"
 #include "receiver.h"
+
 
 struct EepromSettings {
     uint32_t magic;
@@ -20,11 +22,6 @@ struct EepromSettings {
     uint16_t rssiAMin;
     uint16_t rssiAMax;
 
-    // Customization Settings
-    uint8_t uiLayout;
-    uint8_t uiScheme;
-    uint8_t screensaverStyle;
-
     #ifdef USE_DIVERSITY
         Receiver::DiversityMode diversityMode;
         uint16_t rssiBMin;
@@ -37,6 +34,7 @@ struct EepromSettings {
         uint8_t vbatCritical;
     #endif
 
+
     void update();
 
     void load();
@@ -45,6 +43,7 @@ struct EepromSettings {
 
     void initDefaults();
 };
+
 
 // PICO FIX: Removed PROGMEM.
 // 'static const' ensures it stays in Flash and has internal linkage 
@@ -61,11 +60,6 @@ static const struct {
     uint16_t rssiAMin = RSSI_MIN_VAL;
     uint16_t rssiAMax = RSSI_MAX_VAL;
 
-    // Customization Defaults
-    uint8_t uiLayout = DEFAULT_UI_LAYOUT;
-    uint8_t uiScheme = DEFAULT_UI_SCHEME;
-    uint8_t screensaverStyle = DEFAULT_SCREENSAVER_STYLE;
-
     #ifdef USE_DIVERSITY
         Receiver::DiversityMode diversityMode = Receiver::DiversityMode::AUTO;
         uint16_t rssiBMin = RSSI_MIN_VAL;
@@ -79,6 +73,8 @@ static const struct {
     #endif
 } EepromDefaults;
 
+
 extern EepromSettings EepromSettings;
+
 
 #endif

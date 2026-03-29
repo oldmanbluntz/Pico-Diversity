@@ -2,6 +2,7 @@
 #define SETTINGS_H
 #include <Arduino.h> 
 
+
 // === Display Module ==========================================================
 //
 // You can choose one display module only. Only 128x64 OLED displays are
@@ -9,8 +10,7 @@
 //
 // =============================================================================
 //ST7735 0.96 inch TFT
-#define ADAFRUIT_ST7789_SCREENS
-
+#define TFT_ESPI_SCREENS
 // SSH1106 needs https://github.com/badzz/Adafruit_SH1106 installed.
 //#define SH1106
 
@@ -142,13 +142,13 @@
     // voltage.
     //
     //           R1 = 5.6k
-    //     BAT+ ----====----+----+---- ARDUINO ANALOG PIN
-    //                      |    |
-    //                      |    |  (optional)
-    //                      |    || 100n CAP
-    //                      |    |
-    //           R2 = 3.3k  |    |
-    //     BAT- ----====----|----|
+    //    BAT+ ----====----+----+---- ARDUINO ANALOG PIN
+    //                     |    |
+    //                     |    |  (optional)
+    //                     |    || 100n CAP
+    //                     |    |
+    //           R2 = 3.3k |    |
+    //    BAT- ----====----|----|
 
     // Voltage levels
     #define WARNING_VOLTAGE 108 // 3.6V per cell for 3S
@@ -191,10 +191,5 @@
 
 // Time needed to hold mode to get to menu
 #define BUTTON_WAIT_FOR_MENU 1000
-
-// === Customization Defaults ==================================================
-#define DEFAULT_UI_LAYOUT 0
-#define DEFAULT_UI_SCHEME 0
-#define DEFAULT_SCREENSAVER_STYLE 0
 
 #endif // file_defined

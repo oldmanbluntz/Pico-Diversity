@@ -1,13 +1,16 @@
 #ifndef UI_H
 #define UI_H
 
-#include <SPI.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_ST7789.h>
+
+//#include <Wire.h>
+//#include <Adafruit_GFX.h>
+//#include <Adafruit_SSD1306.h>
+#include <TFT_eSPI.h>
 #include <stdint.h>
 
 #include "settings.h"
 #include "settings_internal.h"
+
 
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 135
@@ -18,22 +21,11 @@
 #define CHAR_WIDTH 5
 #define CHAR_HEIGHT 7
 
-// Map the old TFT_eSPI colors to Adafruit colors so the rest of your project compiles
-#define TFT_BLACK       ST77XX_BLACK
-#define TFT_WHITE       ST77XX_WHITE
-#define TFT_RED         ST77XX_RED
-#define TFT_GREEN       ST77XX_GREEN
-#define TFT_BLUE        ST77XX_BLUE
-#define TFT_CYAN        ST77XX_CYAN
-#define TFT_YELLOW      ST77XX_YELLOW
-#define TFT_LIGHTGREY   0xC618
-#define TFT_DARKGREY    0x7BEF
-#define TFT_ORANGE      0xFDA0
-#define TFT_PURPLE      0x780F
-#define TFT_MAGENTA     0xF81F
 
 namespace Ui {
-    extern Adafruit_ST7789 display;
+    // OLED_CLASS is defined in settings.h (usually Adafruit_SSD1306)
+    //extern OLED_CLASS display;
+    extern TFT_eSPI display;
     
     extern bool shouldDrawUpdate;
     extern bool shouldDisplay;
@@ -42,12 +34,46 @@ namespace Ui {
     void setup();
     void update();
 
-    void drawGraph(const uint8_t data[], const uint8_t dataSize, const uint8_t dataScale, const uint16_t x, const uint16_t y, const uint16_t w, const uint16_t h);
-    void drawDiversityGraph(const uint8_t dataA[], const uint8_t dataB[], const uint8_t dataSize, const uint8_t dataScale, const uint16_t x, const uint16_t y, const uint16_t w, const uint16_t h);
-    void drawRssiBars(const uint8_t rssiA, const uint8_t rssiB, const uint8_t rssiMin, const uint8_t rssiMax, const uint16_t x, const uint16_t y, const uint16_t w, const uint16_t h, const uint16_t colorA, const uint16_t colorB, bool forceRedraw = false);
+    void drawGraph(
+        const uint8_t data[],
+        const uint8_t dataSize,
+        const uint8_t dataScale,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h
+    );
+
+    void drawDiversityGraph(
+        const uint8_t dataA[],
+        const uint8_t dataB[],
+        const uint8_t dataSize,
+        const uint8_t dataScale,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h
+    );
+
+    void drawRssiBars(
+        const uint8_t rssiA,
+        const uint8_t rssiB,
+        const uint8_t rssiMin,
+        const uint8_t rssiMax,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h,
+        const uint16_t colorA,
+        const uint16_t colorB,
+        bool forceRedraw = false
+    );
+
     void drawStatusBar();
+
     void drawDashedHLine(const int x, const int y, const int w, const int step);
     void drawDashedVLine(const int x, const int y, const int w, const int step);
+
     void clear();
     void clearRect(const int x, const int y, const int w, const int h);
 

@@ -8,10 +8,13 @@
 
 #include "timer.h"
 
+
 static Timer saveTimer = Timer(EEPROM_SAVE_TIME);
 static bool isDirty = false;
 
+
 struct EepromSettings EepromSettings;
+
 
 void EepromSettings::update() {
     if (isDirty) {
@@ -45,6 +48,7 @@ void EepromSettings::save() {
 void EepromSettings::markDirty() {
     isDirty = true;
 }
+
 
 void EepromSettings::initDefaults() {
     // PICO FIX: Replaced memcpy_P (AVR specific) with standard memcpy.
