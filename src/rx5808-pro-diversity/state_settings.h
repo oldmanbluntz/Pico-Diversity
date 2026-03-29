@@ -1,9 +1,7 @@
 #ifndef STATE_SETTINGS_H
 #define STATE_SETTINGS_H
 
-
 #include "state.h"
-
 
 namespace StateMachine {
     class SettingsStateHandler : public StateMachine::StateHandler {
@@ -16,8 +14,10 @@ namespace StateMachine {
             void onUpdateDraw();
 
             void onButtonChange(Button button, Buttons::PressType pressType);
+            
+        private:
+            int8_t selectedItem = 0;
     };
 }
-
 
 #endif

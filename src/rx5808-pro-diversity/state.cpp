@@ -9,6 +9,7 @@
 #include "state_menu.h"
 #include "state_settings.h"
 #include "state_settings_rssi.h"
+#include "state_settings_custom.h"
 
 #include "ui.h"
 #include "buttons.h"
@@ -29,20 +30,19 @@
     MAX(sizeof(BandScanStateHandler), \
     MAX(sizeof(MenuStateHandler), \
     MAX(sizeof(SettingsStateHandler), \
+    MAX(sizeof(SettingsCustomStateHandler), \
         sizeof(SettingsRssiStateHandler) \
-    )))))
+    ))))))
 ;
 
 namespace StateMachine {
     static void onButtonChange(Button button, Buttons::PressType pressType);
     static StateHandler *getStateHandler(State stateType);
 
-
-    static uint8_t stateBuffer[STATE_BUFFER_SIZE];
+    alignas(4) static uint8_t stateBuffer[STATE_BUFFER_SIZE];
     static StateHandler* currentHandler = nullptr;
     State currentState = State::BOOT;
     State lastState = currentState;
-
 
     void setup() {
         Buttons::registerChangeFunc(onButtonChange);
@@ -99,6 +99,7 @@ namespace StateMachine {
             STATE_FACTORY(State::MENU, MenuStateHandler);
             STATE_FACTORY(State::SETTINGS, SettingsStateHandler);
             STATE_FACTORY(State::SETTINGS_RSSI, SettingsRssiStateHandler);
+            STATE_FACTORY(State::SETTINGS_CUSTOM, SettingsCustomStateHandler);
 
             default:
                 return nullptr;

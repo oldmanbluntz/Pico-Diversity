@@ -4,14 +4,11 @@
 using Ui::display;
 using Ui::StateMenuHelper;
 
-#define MENU_W 56
-#define MENU_X 192 
+// Increased width to 64 to prevent text wrap on "Settings" and "Bandscan"
+#define MENU_W 64
+#define MENU_X (SCREEN_WIDTH - MENU_W) 
 #define MENU_H 135
 #define MENU_ITEM_H 14
-
-// The dedicated memory buffer JUST for the menu
-TFT_eSprite menuSprite = TFT_eSprite(&display);
-bool menuSpriteCreated = false;
 
 void StateMenuHelper::addItem(const MenuText textFn, const MenuHandler handler) {
     if (this->activeItems < STATE_MENU_ITEMS_MAX) {
@@ -50,7 +47,7 @@ bool StateMenuHelper::handleButtons(Button button, Buttons::PressType pressType)
 void StateMenuHelper::draw() {
     if (!this->isVisible()) return;
 
-    // Draw directly to the screen instead of the sprite
+    // Draw directly to the screen using Adafruit GFX
     display.fillRect(MENU_X, 0, MENU_W, MENU_H, TFT_BLACK);
     display.drawFastVLine(MENU_X, 0, MENU_H, TFT_WHITE); 
 
@@ -60,7 +57,6 @@ void StateMenuHelper::draw() {
         uint16_t bgColor = (this->selectedItem == i) ? TFT_WHITE : TFT_BLACK;
         uint16_t fgColor = (this->selectedItem == i) ? TFT_BLACK : TFT_WHITE;
 
-        // Add MENU_X to all X coordinates since we aren't using the sprite's local 0,0 anymore
         display.fillRect(MENU_X + 1, MENU_ITEM_H * i + yOffset, MENU_W - 1, MENU_ITEM_H, bgColor);
 
         const char* text = this->menuItems[i].textFn(this->state);
@@ -69,5 +65,29 @@ void StateMenuHelper::draw() {
         
         display.setCursor(MENU_X + 3, MENU_ITEM_H * i + yOffset + 3);
         display.print(text);
+    }
+}
+
+void StateMenuHelper::draw(GFXcanvas16* canvas) {
+    if (!this->isVisible() || canvas == nullptr) return;
+
+    // Draw to the provided canvas buffer instead of the screen
+    canvas->fillRect(MENU_X, 0, MENU_W, MENU_H, TFT_BLACK);
+    canvas->drawFastVLine(MENU_X, 0, MENU_H, TFT_WHITE); 
+
+    const uint8_t yOffset = (MENU_H / 2) - ((this->activeItems * MENU_ITEM_H) / 2);
+
+    for (uint8_t i = 0; i < this->activeItems; i++) {
+        uint16_t bgColor = (this->selectedItem == i) ? TFT_WHITE : TFT_BLACK;
+        uint16_t fgColor = (this->selectedItem == i) ? TFT_BLACK : TFT_WHITE;
+
+        canvas->fillRect(MENU_X + 1, MENU_ITEM_H * i + yOffset, MENU_W - 1, MENU_ITEM_H, bgColor);
+
+        const char* text = this->menuItems[i].textFn(this->state);
+        canvas->setTextSize(1);
+        canvas->setTextColor(fgColor, bgColor);
+        
+        canvas->setCursor(MENU_X + 3, MENU_ITEM_H * i + yOffset + 3);
+        canvas->print(text);
     }
 }

@@ -1,174 +1,126 @@
-// PICO PORT: Removed <avr/pgmspace.h>
 #include <Arduino.h>
-
 #include "state_bandscan.h"
-
 #include "settings.h"
 #include "settings_internal.h"
 #include "settings_eeprom.h"
 #include "receiver.h"
 #include "channels.h"
 #include "buttons.h"
-
 #include "ui.h"
-#include "ui_menu.h"
+#include "ui_state_menu.h"
 
+static GFXcanvas16* bsCanvas = nullptr;
+
+// Menu text and handlers
+static const char* menuSearchText(void* state) { return "Search"; }
+static const char* menuSettingsText(void* state) { return "Settings"; }
+
+static void menuSearchHandler(void* state) {
+    StateMachine::switchState(StateMachine::State::SEARCH);
+}
+static void menuSettingsHandler(void* state) {
+    StateMachine::switchState(StateMachine::State::SETTINGS);
+}
 
 void StateMachine::BandScanStateHandler::onEnter() {
     orderedChanelIndex = 0;
     lastChannelIndex = Receiver::activeChannel;
+    
+    // Register the items to the menu object using the StateMenuHelper API
+    menu.addItem(menuSearchText, menuSearchHandler);
+    menu.addItem(menuSettingsText, menuSettingsHandler);
+
+    if (!bsCanvas) {
+        bsCanvas = new GFXcanvas16(SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
 }
 
 void StateMachine::BandScanStateHandler::onExit() {
     Receiver::setChannel(lastChannelIndex);
+    if (bsCanvas) {
+        delete bsCanvas;
+        bsCanvas = nullptr;
+    }
 }
-
 
 void StateMachine::BandScanStateHandler::onUpdate() {
     if (!Receiver::isRssiStable())
         return;
 
+    rssiDataA[orderedChanelIndex] = Receiver::rssiA;
     #ifdef USE_DIVERSITY
-        rssiData[orderedChanelIndex] = (Receiver::rssiA + Receiver::rssiB) / 2;
-    #else
-        rssiData[orderedChanelIndex] = Receiver::rssiA;
+        rssiDataB[orderedChanelIndex] = Receiver::rssiB;
     #endif
 
     orderedChanelIndex = (orderedChanelIndex + 1) % (CHANNELS_SIZE);
     Receiver::setChannel(Channels::getOrderedIndex(orderedChanelIndex));
 
     Ui::needUpdate();
-
-    if (orderedChanelIndex == 0) {
-        // Scan cycle complete
-    }
 }
 
-#define BORDER_LEFT_X 0
-#define BORDER_LEFT_Y 0
-#define BORDER_LEFT_H (SCREEN_HEIGHT - CHAR_HEIGHT - 1)
+void StateMachine::BandScanStateHandler::onButtonChange(Button button, Buttons::PressType pressType) {
+    // Correctly passing buttons to the StateMenuHelper instance
+    if (this->menu.handleButtons(button, pressType))
+        return;
+}
 
-#define BORDER_RIGHT_X (SCREEN_WIDTH - 1)
-#define BORDER_RIGHT_Y 0
-#define BORDER_RIGHT_H BORDER_LEFT_H
-
-#define BORDER_BOTTOM_X 0
-#define BORDER_BOTTOM_Y (SCREEN_HEIGHT - CHAR_HEIGHT - 2)
-#define BORDER_BOTTOM_W SCREEN_WIDTH
-
-#define CHANNEL_TEXT_LOW_X 0
-#define CHANNEL_TEXT_LOW_Y (SCREEN_HEIGHT - CHAR_HEIGHT)
-#define CHANNEL_TEXT_W ((CHAR_WIDTH + 1) * 4)
-
-#define CHANNEL_TEXT_HIGH_X (SCREEN_WIDTH - CHANNEL_TEXT_W + 1)
-#define CHANNEL_TEXT_HIGH_Y CHANNEL_TEXT_LOW_Y
-
-#define BORDER_PROGRESS_LEFT_X (CHANNEL_TEXT_LOW_X + CHANNEL_TEXT_W)
-#define BORDER_PROGRESS_RIGHT_X (CHANNEL_TEXT_HIGH_X - 2)
-#define BORDER_PROGRESS_Y BORDER_BOTTOM_Y
-#define BORDER_PROGRESS_H SCREEN_HEIGHT - BORDER_BOTTOM_Y
-
-#define PROGRESS_X (BORDER_PROGRESS_LEFT_X + 2)
-#define PROGRESS_Y (BORDER_PROGRESS_Y + 2)
-#define PROGRESS_W (BORDER_PROGRESS_RIGHT_X - PROGRESS_X - 1)
-#define PROGRESS_H (SCREEN_HEIGHT - PROGRESS_Y) - 2
-
-#define GRAPH_X (BORDER_LEFT_X + 1)
+// Layout constants for 240x135
+#define TEXT_SIZE 2
+#define TEXT_H 16
+#define TEXT_W 48
+#define BORDER_BOTTOM_Y (SCREEN_HEIGHT - TEXT_H - 4)
+#define PROGRESS_X (4 + TEXT_W + 8)
+#define PROGRESS_Y (SCREEN_HEIGHT - TEXT_H + 2)
+#define PROGRESS_W (SCREEN_WIDTH - TEXT_W - 4 - PROGRESS_X - 8)
+#define PROGRESS_H (TEXT_H - 4)
+#define GRAPH_X 1
 #define GRAPH_Y 0
-#define GRAPH_W (BORDER_RIGHT_X - GRAPH_X)
+#define GRAPH_W (SCREEN_WIDTH - 2)
 #define GRAPH_H BORDER_BOTTOM_Y
 
-
 void StateMachine::BandScanStateHandler::onInitialDraw() {
-    Ui::clear();
-
-    Ui::display.drawFastVLine(
-        BORDER_LEFT_X,
-        BORDER_LEFT_Y,
-        BORDER_LEFT_H,
-        TFT_WHITE
-    );
-
-    Ui::display.drawFastVLine(
-        BORDER_RIGHT_X,
-        BORDER_RIGHT_Y,
-        BORDER_RIGHT_H,
-        TFT_WHITE
-    );
-
-    Ui::display.drawFastHLine(
-        BORDER_BOTTOM_X,
-        BORDER_BOTTOM_Y,
-        BORDER_BOTTOM_W,
-        TFT_WHITE
-    );
-
-    Ui::display.drawFastHLine(
-        BORDER_PROGRESS_LEFT_X,
-        SCREEN_HEIGHT - 1,
-        BORDER_PROGRESS_RIGHT_X - BORDER_PROGRESS_LEFT_X,
-        TFT_WHITE
-    );
-
-    Ui::display.drawFastVLine(
-        BORDER_PROGRESS_LEFT_X,
-        BORDER_PROGRESS_Y,
-        BORDER_PROGRESS_H,
-        TFT_WHITE
-    );
-
-    Ui::display.drawFastVLine(
-        BORDER_PROGRESS_RIGHT_X,
-        BORDER_PROGRESS_Y,
-        BORDER_PROGRESS_H,
-        TFT_WHITE
-    );
-
-    Ui::display.setTextSize(1);
-    Ui::display.setTextColor(TFT_WHITE);
-    Ui::display.setCursor(CHANNEL_TEXT_LOW_X, CHANNEL_TEXT_LOW_Y);
-    Ui::display.print(Channels::getFrequency(Channels::getOrderedIndex(0)));
-
-    Ui::display.setCursor(CHANNEL_TEXT_HIGH_X, CHANNEL_TEXT_HIGH_Y);
-    Ui::display.print(
-        Channels::getFrequency(Channels::getOrderedIndex(CHANNELS_SIZE - 1)));
     Ui::needDisplay();
 }
 
 void StateMachine::BandScanStateHandler::onUpdateDraw() {
-    Ui::drawDiversityGraph(
-        rssiData,       // Pass as RX A
-        rssiData,       // Pass as RX B
-        CHANNELS_SIZE,  // Data size
-        100,            // Scale
-        GRAPH_X,
-        GRAPH_Y,
-        GRAPH_W,
-        GRAPH_H
-    );
+    if (!bsCanvas) return;
 
-    Ui::display.drawFastHLine(
-        BORDER_BOTTOM_X,
-        BORDER_BOTTOM_Y,
-        BORDER_BOTTOM_W,
-        TFT_WHITE
-    );
+    bsCanvas->fillScreen(TFT_BLACK);
+    bsCanvas->drawFastHLine(0, BORDER_BOTTOM_Y, SCREEN_WIDTH, TFT_LIGHTGREY);
 
-    Ui::clearRect(
-        PROGRESS_X,
-        PROGRESS_Y,
-        PROGRESS_W,
-        PROGRESS_H
-    );
+    bsCanvas->setTextSize(TEXT_SIZE);
+    bsCanvas->setTextColor(TFT_LIGHTGREY);
+    bsCanvas->setCursor(4, SCREEN_HEIGHT - TEXT_H);
+    bsCanvas->print(Channels::getFrequency(Channels::getOrderedIndex(0)));
 
-    uint16_t progressW = orderedChanelIndex * PROGRESS_W / CHANNELS_SIZE + 1;
-    Ui::display.fillRect(
-        PROGRESS_X,
-        PROGRESS_Y,
-        progressW,
-        PROGRESS_H,
-        TFT_WHITE
-    );
+    bsCanvas->setCursor(SCREEN_WIDTH - TEXT_W - 4, SCREEN_HEIGHT - TEXT_H);
+    bsCanvas->print(Channels::getFrequency(Channels::getOrderedIndex(CHANNELS_SIZE - 1)));
+
+    bsCanvas->drawRect(PROGRESS_X - 1, PROGRESS_Y - 1, PROGRESS_W + 2, PROGRESS_H + 2, TFT_WHITE);
+    uint16_t progressW = (orderedChanelIndex * PROGRESS_W) / CHANNELS_SIZE;
+    if (progressW > 0) bsCanvas->fillRect(PROGRESS_X, PROGRESS_Y, progressW, PROGRESS_H, TFT_RED);
+    if (progressW < PROGRESS_W) bsCanvas->fillRect(PROGRESS_X + progressW, PROGRESS_Y, PROGRESS_W - progressW, PROGRESS_H, TFT_DARKGREY);
+
+    for (uint16_t i = 0; i < CHANNELS_SIZE - 1; i++) {
+        uint16_t x1 = map(i, 0, CHANNELS_SIZE - 2, GRAPH_X, GRAPH_X + GRAPH_W - 1);
+        uint16_t x2 = map(i + 1, 0, CHANNELS_SIZE - 2, GRAPH_X, GRAPH_X + GRAPH_W - 1);
+        uint16_t yA1 = map(rssiDataA[i], 0, 100, GRAPH_Y + GRAPH_H - 2, GRAPH_Y + 2);
+        uint16_t yA2 = map(rssiDataA[i + 1], 0, 100, GRAPH_Y + GRAPH_H - 2, GRAPH_Y + 2);
+        
+        #ifdef USE_DIVERSITY
+            bsCanvas->drawLine(x1, yA1, x2, yA2, TFT_RED);
+            uint16_t yB1 = map(rssiDataB[i], 0, 100, GRAPH_Y + GRAPH_H - 2, GRAPH_Y + 2);
+            uint16_t yB2 = map(rssiDataB[i + 1], 0, 100, GRAPH_Y + GRAPH_H - 2, GRAPH_Y + 2);
+            bsCanvas->drawLine(x1, yB1, x2, yB2, TFT_CYAN);
+        #else
+            bsCanvas->drawLine(x1, yA1, x2, yA2, TFT_YELLOW);
+        #endif
+    }
+
+    // Render the menu INTO the buffer so it's included when we push the bitmap to the display
+    this->menu.draw(bsCanvas);
+
+    Ui::display.drawRGBBitmap(0, 0, bsCanvas->getBuffer(), SCREEN_WIDTH, SCREEN_HEIGHT);
 
     Ui::needDisplay();
 }

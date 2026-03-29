@@ -114,12 +114,5 @@ namespace Buttons {
                     runChangeFuncs(button, PressType::LONG);
             }
         }
-
-        if (state.pressed) {
-            uint32_t duration = millis() - state.changeTime;
-
-            if (duration >= 2000)
-                runChangeFuncs(button, PressType::HOLDING);
-        }
     }
 }

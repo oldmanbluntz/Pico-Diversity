@@ -20,6 +20,7 @@ namespace Ui {
 
             StateMenuHelper(void* state) { this->state = state; }
             void draw();
+            void draw(GFXcanvas16* canvas);
             bool handleButtons(Button button, Buttons::PressType pressType);
             bool isVisible() { return this->visible; }
             

@@ -3,17 +3,27 @@
 #include "channels.h"
 #include "ui.h"
 
-#define FREQUENCY_TEXT_SIZE 2 // Bumped from 1 to 2
-#define FREQUENCY_TEXT_X 96   // Shifted right to keep it centered
-#define FREQUENCY_TEXT_Y 6    // Moved down slightly from the top edge
+#ifndef TFT_ORANGE
+#define TFT_ORANGE  0xFDA0
+#endif
+#ifndef TFT_PURPLE
+#define TFT_PURPLE  0x780F
+#endif
+#ifndef TFT_MAGENTA 
+#define TFT_MAGENTA 0xF81F
+#endif
 
-#define CHANNEL_TEXT_SIZE 8   // Massive size 8 text for the main channel!
-#define CHANNEL_TEXT_X 72     // Re-centered for the wider text
-#define CHANENL_TEXT_Y 24     // Pushed down to fill the empty vertical space
+#define FREQUENCY_TEXT_SIZE 2 
+#define FREQUENCY_TEXT_X 96   
+#define FREQUENCY_TEXT_Y 6    
 
-#define BARS_Y 90             // Pushed all the way down to the bottom
-#define BARS_H 40             // Doubled the thickness of the bars (was 20)
-#define BARS_X 44             // Pushed right to make room for larger RX labels
+#define CHANNEL_TEXT_SIZE 8   
+#define CHANNEL_TEXT_X 72     
+#define CHANENL_TEXT_Y 24     
+
+#define BARS_Y 90             
+#define BARS_H 40             
+#define BARS_X 44             
 #define BARS_W (SCREEN_WIDTH - BARS_X - 4)
 
 #define COLOR_RXA TFT_YELLOW
@@ -21,47 +31,39 @@
 
 using Ui::display;
 
+// Create a static canvas for the search UI to prevent flickering
+static GFXcanvas16* searchCanvas = nullptr;
+
 void StateMachine::SearchStateHandler::onInitialDraw() {
-    Ui::clear();
-
-    display.setTextSize(2);
-    #ifdef USE_DIVERSITY
-        display.setTextColor(COLOR_RXA, TFT_BLACK);
-        display.setCursor(2, BARS_Y);
-        display.print("RXA");
-        
-        display.setTextColor(COLOR_RXB, TFT_BLACK);
-        display.setCursor(2, BARS_Y + (BARS_H / 2));
-        display.print("RXB");
-    #else
-        display.setTextColor(COLOR_RXA, TFT_BLACK);
-        display.setCursor(2, BARS_Y + (BARS_H / 4));
-        display.print("RX");
-    #endif
-
-    drawChannelText();
-    drawFrequencyText();
-    
-    #ifdef USE_DIVERSITY
-        Ui::drawRssiBars(Receiver::rssiA, Receiver::rssiB, 0, 100, BARS_X, BARS_Y, BARS_W, BARS_H, COLOR_RXA, COLOR_RXB, true);
-    #else
-        Ui::drawRssiBars(Receiver::rssiA, 0, 0, 100, BARS_X, BARS_Y, BARS_W, BARS_H, COLOR_RXA, COLOR_RXB, true);
-    #endif
-
+    if (!searchCanvas) {
+        searchCanvas = new GFXcanvas16(SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
     Ui::needDisplay();
 }
 
 void StateMachine::SearchStateHandler::onUpdateDraw() {
-    drawChannelText();
-    drawFrequencyText();
-    drawRssiGraph();
-    menu.draw();
-    Ui::needDisplay();
-}
+    if (!searchCanvas) return;
 
-void StateMachine::SearchStateHandler::drawBorders() { }
+    // 1. Clear the buffer
+    searchCanvas->fillScreen(TFT_BLACK);
 
-void StateMachine::SearchStateHandler::drawChannelText() {
+    // 2. Draw static labels
+    searchCanvas->setTextSize(2);
+    #ifdef USE_DIVERSITY
+        searchCanvas->setTextColor(COLOR_RXA, TFT_BLACK);
+        searchCanvas->setCursor(2, BARS_Y);
+        searchCanvas->print("RXA");
+        
+        searchCanvas->setTextColor(COLOR_RXB, TFT_BLACK);
+        searchCanvas->setCursor(2, BARS_Y + (BARS_H / 2));
+        searchCanvas->print("RXB");
+    #else
+        searchCanvas->setTextColor(COLOR_RXA, TFT_BLACK);
+        searchCanvas->setCursor(2, BARS_Y + (BARS_H / 4));
+        searchCanvas->print("RX");
+    #endif
+
+    // 3. Draw dynamic text into the canvas
     const char* name = Channels::getName(Receiver::activeChannel);
     char letter = name[0];
     const char* number = &name[1]; 
@@ -78,36 +80,45 @@ void StateMachine::SearchStateHandler::drawChannelText() {
         default:  letterColor = TFT_WHITE; break;
     }
 
-    display.setTextSize(CHANNEL_TEXT_SIZE);
-    display.setCursor(CHANNEL_TEXT_X, CHANENL_TEXT_Y);
+    searchCanvas->setTextSize(CHANNEL_TEXT_SIZE);
+    searchCanvas->setCursor(CHANNEL_TEXT_X, CHANENL_TEXT_Y);
+    searchCanvas->setTextColor(letterColor, TFT_BLACK);
+    searchCanvas->print(String(letter));
     
-    display.setTextColor(letterColor, TFT_BLACK);
-    display.print(letter);
-    
-    display.setTextColor(TFT_WHITE, TFT_BLACK);
-    display.print(number);
-}
+    searchCanvas->setTextColor(TFT_WHITE, TFT_BLACK);
+    searchCanvas->print(String(number));
 
-void StateMachine::SearchStateHandler::drawFrequencyText() {
-    display.setTextSize(FREQUENCY_TEXT_SIZE);
-    display.setTextColor(TFT_WHITE, TFT_BLACK);
-    display.setCursor(FREQUENCY_TEXT_X, FREQUENCY_TEXT_Y);
-    display.print(Channels::getFrequency(Receiver::activeChannel));
-}
+    searchCanvas->setTextSize(FREQUENCY_TEXT_SIZE);
+    searchCanvas->setTextColor(TFT_WHITE, TFT_BLACK);
+    searchCanvas->setCursor(FREQUENCY_TEXT_X, FREQUENCY_TEXT_Y);
+    searchCanvas->print(Channels::getFrequency(Receiver::activeChannel));
 
-void StateMachine::SearchStateHandler::drawScanBar() { }
-
-void StateMachine::SearchStateHandler::drawRssiGraph() {
-    // Dynamically shrink the bars if the menu is open to prevent overlap
-    uint16_t activeBarsW = this->menu.isVisible() ? (162 - BARS_X - 2) : BARS_W;
+    // 4. Draw RSSI indicators
+    // Calculate width available based on menu visibility
+    // If menu is 64 wide, available width ends at 240 - 64 = 176
+    uint16_t activeBarsW = this->menu.isVisible() ? (176 - BARS_X - 4) : BARS_W;
+    uint16_t barW_A = map(constrain(Receiver::rssiA, 0, 100), 0, 100, 0, activeBarsW);
+    searchCanvas->fillRect(BARS_X, BARS_Y, barW_A, (BARS_H / 2) - 2, COLOR_RXA);
 
     #ifdef USE_DIVERSITY
-        Ui::drawRssiBars(Receiver::rssiA, Receiver::rssiB, 0, 100, BARS_X, BARS_Y, activeBarsW, BARS_H, COLOR_RXA, COLOR_RXB);
-    #else
-        Ui::drawRssiBars(Receiver::rssiA, 0, 0, 100, BARS_X, BARS_Y, activeBarsW, BARS_H, COLOR_RXA, COLOR_RXB);
+        uint16_t barW_B = map(constrain(Receiver::rssiB, 0, 100), 0, 100, 0, activeBarsW);
+        searchCanvas->fillRect(BARS_X, BARS_Y + (BARS_H / 2), barW_B, (BARS_H / 2) - 2, COLOR_RXB);
     #endif
+
+    // 5. Draw the menu into the canvas buffer
+    if (this->menu.isVisible()) {
+        this->menu.draw(searchCanvas);
+    }
+
+    // 6. Push the complete flicker-free frame to the hardware display
+    display.drawRGBBitmap(0, 0, searchCanvas->getBuffer(), SCREEN_WIDTH, SCREEN_HEIGHT);
+    
+    Ui::needDisplay();
 }
 
-void StateMachine::SearchStateHandler::drawMenu() {
-    this->menu.draw();
-}
+void StateMachine::SearchStateHandler::drawBorders() { }
+void StateMachine::SearchStateHandler::drawChannelText() { }
+void StateMachine::SearchStateHandler::drawFrequencyText() { }
+void StateMachine::SearchStateHandler::drawScanBar() { }
+void StateMachine::SearchStateHandler::drawRssiGraph() { }
+void StateMachine::SearchStateHandler::drawMenu() { }
