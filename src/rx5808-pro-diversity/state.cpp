@@ -10,6 +10,7 @@
 #include "state_settings.h"
 #include "state_settings_rssi.h"
 #include "state_settings_custom.h"
+#include "state_settings_models.h"
 
 #include "ui.h"
 #include "buttons.h"
@@ -31,8 +32,9 @@
     MAX(sizeof(MenuStateHandler), \
     MAX(sizeof(SettingsStateHandler), \
     MAX(sizeof(SettingsCustomStateHandler), \
+    MAX(sizeof(SettingsModelsStateHandler), \
         sizeof(SettingsRssiStateHandler) \
-    ))))))
+    )))))))
 ;
 
 namespace StateMachine {
@@ -100,6 +102,7 @@ namespace StateMachine {
             STATE_FACTORY(State::SETTINGS, SettingsStateHandler);
             STATE_FACTORY(State::SETTINGS_RSSI, SettingsRssiStateHandler);
             STATE_FACTORY(State::SETTINGS_CUSTOM, SettingsCustomStateHandler);
+            STATE_FACTORY(State::SETTINGS_MODELS, SettingsModelsStateHandler);
 
             default:
                 return nullptr;

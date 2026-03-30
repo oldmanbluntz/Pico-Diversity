@@ -47,8 +47,22 @@ void EepromSettings::markDirty() {
 }
 
 void EepromSettings::initDefaults() {
-    // PICO FIX: Replaced memcpy_P (AVR specific) with standard memcpy.
-    // The Pico has a unified memory map; Flash is directly readable.
     memcpy(this, &EepromDefaults, sizeof(EepromDefaults));
+    
+    // Format all 8 models to default minimums/empty names
+    for(int i = 0; i < 8; i++) {
+        this->models[i].name[0] = '\0';
+        this->models[i].rssiAMin = RSSI_MIN_VAL;
+        this->models[i].rssiAMax = RSSI_MAX_VAL;
+        #ifdef USE_DIVERSITY
+            this->models[i].rssiBMin = RSSI_MIN_VAL;
+            this->models[i].rssiBMax = RSSI_MAX_VAL;
+        #endif
+    }
+    
+    // Create a default Model 1
+    strcpy(this->models[0].name, "Model 1");
+    this->activeModel = 0;
+
     this->save();
 }

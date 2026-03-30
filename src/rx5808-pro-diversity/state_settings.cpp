@@ -4,9 +4,10 @@
 #include "buttons.h"
 #include "ui.h"
 
-#define NUM_SETTINGS_ITEMS 3
+#define NUM_SETTINGS_ITEMS 4
 static const char* menuItems[NUM_SETTINGS_ITEMS] = {
     "Customization",
+    "Models",
     "RSSI Calibration",
     "Back"
 };
@@ -27,8 +28,7 @@ void StateMachine::SettingsStateHandler::onExit() {
     }
 }
 
-void StateMachine::SettingsStateHandler::onUpdate() {
-}
+void StateMachine::SettingsStateHandler::onUpdate() {}
 
 void StateMachine::SettingsStateHandler::onButtonChange(Button button, Buttons::PressType pressType) {
     if (pressType != Buttons::PressType::SHORT) return;
@@ -48,8 +48,10 @@ void StateMachine::SettingsStateHandler::onButtonChange(Button button, Buttons::
             if (selectedItem == 0) {
                 StateMachine::switchState(StateMachine::State::SETTINGS_CUSTOM);
             } else if (selectedItem == 1) {
-                StateMachine::switchState(StateMachine::State::SETTINGS_RSSI);
+                StateMachine::switchState(StateMachine::State::SETTINGS_MODELS); // NEW ROUTE
             } else if (selectedItem == 2) {
+                StateMachine::switchState(StateMachine::State::SETTINGS_RSSI);
+            } else if (selectedItem == 3) {
                 StateMachine::switchState(StateMachine::State::SEARCH); 
             }
             break;
@@ -57,7 +59,6 @@ void StateMachine::SettingsStateHandler::onButtonChange(Button button, Buttons::
 }
 
 void StateMachine::SettingsStateHandler::onInitialDraw() {
-    // FIX: Force the UI to draw our first frame immediately upon entering the menu
     Ui::needUpdate(); 
 }
 
@@ -66,17 +67,15 @@ void StateMachine::SettingsStateHandler::onUpdateDraw() {
 
     settingsCanvas->fillScreen(TFT_BLACK);
     
-    // Draw Header
     settingsCanvas->setTextSize(2);
     settingsCanvas->setTextColor(TFT_WHITE, TFT_BLACK);
     settingsCanvas->setCursor(4, 4);
     settingsCanvas->print("Settings");
     settingsCanvas->drawFastHLine(0, 24, SCREEN_WIDTH, TFT_LIGHTGREY);
 
-    // Draw Menu Items
     settingsCanvas->setTextSize(2);
     for (int i = 0; i < NUM_SETTINGS_ITEMS; i++) {
-        int y = 32 + (i * 22); // Spacing between items
+        int y = 32 + (i * 22); 
         
         if (i == selectedItem) {
             settingsCanvas->fillRect(0, y - 2, SCREEN_WIDTH, 20, TFT_WHITE);

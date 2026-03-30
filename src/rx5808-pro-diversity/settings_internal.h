@@ -7,7 +7,7 @@
 // === EEPROM ==================================================================
 
 // This should be incremented after every EEPROM change.
-#define EEPROM_MAGIC 0x00000045
+#define EEPROM_MAGIC 0x00000046
 
 // === Receiver Modules =========================================================
 

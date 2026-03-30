@@ -96,6 +96,16 @@ void StateMachine::SettingsRssiStateHandler::onButtonChange(
         break;
 
         case InternalState::DONE:
+            // --- NEW MODEL SAVE LOGIC ---
+            // Save the newly calibrated RSSI values to the active model slot array
+            EepromSettings.models[EepromSettings.activeModel].rssiAMin = EepromSettings.rssiAMin;
+            EepromSettings.models[EepromSettings.activeModel].rssiAMax = EepromSettings.rssiAMax;
+            #ifdef USE_DIVERSITY
+                EepromSettings.models[EepromSettings.activeModel].rssiBMin = EepromSettings.rssiBMin;
+                EepromSettings.models[EepromSettings.activeModel].rssiBMax = EepromSettings.rssiBMax;
+            #endif
+            // ----------------------------
+
             EepromSettings.save();
             StateMachine::switchState(StateMachine::State::MENU);
         break;
