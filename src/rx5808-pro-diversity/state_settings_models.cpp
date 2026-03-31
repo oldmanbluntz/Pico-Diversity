@@ -48,7 +48,7 @@ void StateMachine::SettingsModelsStateHandler::onButtonChange(Button button, But
                 if (selectedListIdx > 8) selectedListIdx = 0;
                 Ui::needUpdate();
             } else if (button == Button::MODE) {
-                if (selectedListIdx == 8) { // "Back" option
+                if (selectedListIdx == 8) { 
                     StateMachine::switchState(StateMachine::State::SETTINGS);
                 } else {
                     currentSubMenu = SubMenu::POPUP;
@@ -131,7 +131,6 @@ void StateMachine::SettingsModelsStateHandler::onButtonChange(Button button, But
                 Ui::needUpdate();
             } else if (button == Button::MODE) {
                 if (editCursorIdx == 8) {
-                    // SAVE EXECUTED!
                     int lastChar = 7;
                     while (lastChar >= 0 && editBuffer[lastChar] == ' ') {
                         editBuffer[lastChar] = '\0';
@@ -161,10 +160,10 @@ void StateMachine::SettingsModelsStateHandler::onUpdateDraw() {
     modelsCanvas->fillScreen(TFT_BLACK);
     
     modelsCanvas->setTextSize(2);
-    modelsCanvas->setTextColor(TFT_WHITE, TFT_BLACK);
+    modelsCanvas->setTextColor(getSchemeColorMenu(), TFT_BLACK);
     modelsCanvas->setCursor(4, 4);
     modelsCanvas->print("Models");
-    modelsCanvas->drawFastHLine(0, 24, SCREEN_WIDTH, TFT_LIGHTGREY);
+    modelsCanvas->drawFastHLine(0, 24, SCREEN_WIDTH, getSchemeColorMenu());
 
     if (currentSubMenu == SubMenu::LIST || currentSubMenu == SubMenu::EDIT) {
         int startIdx = selectedListIdx < 4 ? 0 : selectedListIdx - 3;
@@ -177,8 +176,8 @@ void StateMachine::SettingsModelsStateHandler::onUpdateDraw() {
             int y = 32 + (i * 20);
             
             if (idx == selectedListIdx && currentSubMenu == SubMenu::LIST) {
-                modelsCanvas->fillRect(0, y - 2, SCREEN_WIDTH, 18, TFT_WHITE);
-                modelsCanvas->setTextColor(TFT_BLACK, TFT_WHITE);
+                modelsCanvas->fillRect(0, y - 2, SCREEN_WIDTH, 18, getSchemeColorMenu());
+                modelsCanvas->setTextColor(TFT_BLACK, getSchemeColorMenu());
             } else {
                 modelsCanvas->setTextColor(TFT_WHITE, TFT_BLACK);
             }
@@ -192,10 +191,9 @@ void StateMachine::SettingsModelsStateHandler::onUpdateDraw() {
                 else modelsCanvas->print("  ");
 
                 if (currentSubMenu == SubMenu::EDIT && idx == selectedListIdx) {
-                    // Draw the 8 editable characters
                     for (int c = 0; c < 8; c++) {
                         if (c == editCursorIdx) {
-                            modelsCanvas->setTextColor(TFT_BLACK, TFT_WHITE);
+                            modelsCanvas->setTextColor(TFT_BLACK, getSchemeColorMenu());
                             modelsCanvas->print(editBuffer[c]);
                             modelsCanvas->setTextColor(TFT_WHITE, TFT_BLACK);
                         } else {
@@ -203,9 +201,8 @@ void StateMachine::SettingsModelsStateHandler::onUpdateDraw() {
                         }
                     }
                     
-                    // Draw the 9th slot for saving
                     if (editCursorIdx == 8) {
-                        modelsCanvas->setTextColor(TFT_BLACK, TFT_WHITE);
+                        modelsCanvas->setTextColor(TFT_BLACK, getSchemeColorMenu());
                         modelsCanvas->print(" [SAVE]");
                         modelsCanvas->setTextColor(TFT_WHITE, TFT_BLACK);
                     } else {
@@ -230,17 +227,17 @@ void StateMachine::SettingsModelsStateHandler::onUpdateDraw() {
         modelsCanvas->print("Slot: ");
         modelsCanvas->print(strlen(name) == 0 ? "Empty" : name);
 
-        modelsCanvas->fillRect(40, 45, 160, 80, 0x2104);
-        modelsCanvas->drawRect(40, 45, 160, 80, TFT_WHITE);
+        modelsCanvas->fillRect(40, 45, 160, 80, TFT_BLACK);
+        modelsCanvas->drawRect(40, 45, 160, 80, getSchemeColorMenu());
         
         const char* popupItems[] = {"Select", "Edit", "Delete", "Back"};
         for (int i = 0; i < 4; i++) {
             int y = 50 + (i * 18);
             if (i == selectedPopupIdx) {
-                modelsCanvas->fillRect(42, y - 2, 156, 18, TFT_WHITE);
-                modelsCanvas->setTextColor(TFT_BLACK, TFT_WHITE);
+                modelsCanvas->fillRect(42, y - 2, 156, 18, getSchemeColorMenu());
+                modelsCanvas->setTextColor(TFT_BLACK, getSchemeColorMenu());
             } else {
-                modelsCanvas->setTextColor(TFT_WHITE, 0x2104);
+                modelsCanvas->setTextColor(TFT_WHITE, TFT_BLACK);
             }
             modelsCanvas->setCursor(50, y);
             modelsCanvas->print(popupItems[i]);

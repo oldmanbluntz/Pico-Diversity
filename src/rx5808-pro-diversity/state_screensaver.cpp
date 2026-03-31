@@ -52,7 +52,7 @@ void fillQuad(Point2D p1, Point2D p2, Point2D p3, Point2D p4, uint16_t color) {
 }
 
 // ==============================================================================
-// 1. SPINNING 3D RECTANGLE (Buffered, Pitched, 360-Solid Blocks)
+// 1. SPINNING 3D RECTANGLE
 // ==============================================================================
 const float FOV_CUBE = 64.0;
 
@@ -168,7 +168,6 @@ void drawCubeSolidTrail(const uint8_t rxData[], int dataSize, float zCenter, uin
             p[c] = projectCube(transformCube(c3d[c], currentAngle));
         }
 
-        // 1. Draw end-caps FIRST so they get cleanly overlapped by the main faces
         if (i == dataSize - 2 && rightCapVisible) {
             fillQuad(p[1], p[2], p[6], p[5], colorSide);
             canvas->drawLine(p[1].x, p[1].y, p[2].x, p[2].y, TFT_BLACK);
@@ -184,20 +183,18 @@ void drawCubeSolidTrail(const uint8_t rxData[], int dataSize, float zCenter, uin
             canvas->drawLine(p[4].x, p[4].y, p[0].x, p[0].y, TFT_BLACK);
         }
 
-        // 2. Draw Top face
         fillQuad(p[0], p[1], p[2], p[3], colorTop);
 
-        // 3. Draw Front or Back face with matching longitudinal lines
         if (drawFaceA) {
             fillQuad(p[3], p[2], p[6], p[7], colorFront);
-            canvas->drawLine(p[0].x, p[0].y, p[1].x, p[1].y, TFT_DARKGREY); // Back edge
-            canvas->drawLine(p[3].x, p[3].y, p[2].x, p[2].y, TFT_BLACK);    // Front edge
-            canvas->drawLine(p[7].x, p[7].y, p[6].x, p[6].y, TFT_BLACK);    // Bottom edge
+            canvas->drawLine(p[0].x, p[0].y, p[1].x, p[1].y, TFT_DARKGREY); 
+            canvas->drawLine(p[3].x, p[3].y, p[2].x, p[2].y, TFT_BLACK);    
+            canvas->drawLine(p[7].x, p[7].y, p[6].x, p[6].y, TFT_BLACK);    
         } else {
             fillQuad(p[0], p[1], p[5], p[4], colorFront);
-            canvas->drawLine(p[3].x, p[3].y, p[2].x, p[2].y, TFT_DARKGREY); // Front edge
-            canvas->drawLine(p[0].x, p[0].y, p[1].x, p[1].y, TFT_BLACK);    // Back edge
-            canvas->drawLine(p[4].x, p[4].y, p[5].x, p[5].y, TFT_BLACK);    // Bottom edge
+            canvas->drawLine(p[3].x, p[3].y, p[2].x, p[2].y, TFT_DARKGREY); 
+            canvas->drawLine(p[0].x, p[0].y, p[1].x, p[1].y, TFT_BLACK);    
+            canvas->drawLine(p[4].x, p[4].y, p[5].x, p[5].y, TFT_BLACK);    
         }
     }
 }
@@ -209,19 +206,19 @@ void drawSpinningGraphCube(const uint8_t rxDataA[], const uint8_t rxDataB[], int
 
     #ifdef USE_DIVERSITY
         if (cos(currentAngle) > 0) {
-            drawCubeSolidTrail(rxDataA, dataSize, 15.0, TFT_YELLOW, TFT_YELLOW, TFT_YELLOW); 
-            drawCubeSolidTrail(rxDataB, dataSize, -15.0, TFT_CYAN, TFT_CYAN, TFT_CYAN);  
+            drawCubeSolidTrail(rxDataA, dataSize, 15.0, getSchemeColorA(), getSchemeColorA(), getSchemeColorA()); 
+            drawCubeSolidTrail(rxDataB, dataSize, -15.0, getSchemeColorB(), getSchemeColorB(), getSchemeColorB());  
         } else {
-            drawCubeSolidTrail(rxDataB, dataSize, -15.0, TFT_CYAN, TFT_CYAN, TFT_CYAN);  
-            drawCubeSolidTrail(rxDataA, dataSize, 15.0, TFT_YELLOW, TFT_YELLOW, TFT_YELLOW); 
+            drawCubeSolidTrail(rxDataB, dataSize, -15.0, getSchemeColorB(), getSchemeColorB(), getSchemeColorB());  
+            drawCubeSolidTrail(rxDataA, dataSize, 15.0, getSchemeColorA(), getSchemeColorA(), getSchemeColorA()); 
         }
     #else
-        drawCubeSolidTrail(rxDataA, dataSize, 15.0, TFT_YELLOW, TFT_YELLOW, TFT_YELLOW);
+        drawCubeSolidTrail(rxDataA, dataSize, 15.0, getSchemeColorA(), getSchemeColorA(), getSchemeColorA());
     #endif
 }
 
 // ==============================================================================
-// 2. CARTESIAN 3D ENGINE (Reverted to the proven working version)
+// 2. CARTESIAN 3D ENGINE
 // ==============================================================================
 const float FOV_CARTESIAN = 100.0;
 
@@ -344,11 +341,11 @@ void StateMachine::ScreensaverStateHandler::onUpdateDraw() {
     } else {
         #ifdef USE_DIVERSITY
             drawCartesianTrail(Receiver::rssiBLast, RECEIVER_LAST_DATA_SIZE, 40.0, 
-                TFT_CYAN, TFT_CYAN, TFT_CYAN);
+                getSchemeColorB(), getSchemeColorB(), getSchemeColorB());
         #endif
 
         drawCartesianTrail(Receiver::rssiALast, RECEIVER_LAST_DATA_SIZE, -40.0, 
-            TFT_YELLOW, TFT_YELLOW, TFT_YELLOW);
+            getSchemeColorA(), getSchemeColorA(), getSchemeColorA());
     }
     
     Ui::display.drawRGBBitmap(0, 0, canvas->getBuffer(), SCREEN_WIDTH, SCREEN_HEIGHT);

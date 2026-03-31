@@ -111,9 +111,9 @@ void StateMachine::BandScanStateHandler::onUpdateDraw() {
             bsCanvas->drawLine(x1, yA1, x2, yA2, TFT_RED);
             uint16_t yB1 = map(rssiDataB[i], 0, 100, GRAPH_Y + GRAPH_H - 2, GRAPH_Y + 2);
             uint16_t yB2 = map(rssiDataB[i + 1], 0, 100, GRAPH_Y + GRAPH_H - 2, GRAPH_Y + 2);
-            bsCanvas->drawLine(x1, yB1, x2, yB2, TFT_CYAN);
+            bsCanvas->drawLine(x1, yB1, x2, yB2, getSchemeColorB());
         #else
-            bsCanvas->drawLine(x1, yA1, x2, yA2, TFT_YELLOW);
+            bsCanvas->drawLine(x1, yA1, x2, yA2, getSchemeColorA());
         #endif
     }
 

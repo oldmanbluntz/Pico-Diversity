@@ -3,6 +3,7 @@
 #include "state.h"
 #include "buttons.h"
 #include "ui.h"
+#include "settings_eeprom.h"
 
 #define NUM_SETTINGS_ITEMS 4
 static const char* menuItems[NUM_SETTINGS_ITEMS] = {
@@ -48,7 +49,7 @@ void StateMachine::SettingsStateHandler::onButtonChange(Button button, Buttons::
             if (selectedItem == 0) {
                 StateMachine::switchState(StateMachine::State::SETTINGS_CUSTOM);
             } else if (selectedItem == 1) {
-                StateMachine::switchState(StateMachine::State::SETTINGS_MODELS); // NEW ROUTE
+                StateMachine::switchState(StateMachine::State::SETTINGS_MODELS);
             } else if (selectedItem == 2) {
                 StateMachine::switchState(StateMachine::State::SETTINGS_RSSI);
             } else if (selectedItem == 3) {
@@ -68,18 +69,18 @@ void StateMachine::SettingsStateHandler::onUpdateDraw() {
     settingsCanvas->fillScreen(TFT_BLACK);
     
     settingsCanvas->setTextSize(2);
-    settingsCanvas->setTextColor(TFT_WHITE, TFT_BLACK);
+    settingsCanvas->setTextColor(getSchemeColorMenu(), TFT_BLACK);
     settingsCanvas->setCursor(4, 4);
     settingsCanvas->print("Settings");
-    settingsCanvas->drawFastHLine(0, 24, SCREEN_WIDTH, TFT_LIGHTGREY);
+    settingsCanvas->drawFastHLine(0, 24, SCREEN_WIDTH, getSchemeColorMenu());
 
     settingsCanvas->setTextSize(2);
     for (int i = 0; i < NUM_SETTINGS_ITEMS; i++) {
         int y = 32 + (i * 22); 
         
         if (i == selectedItem) {
-            settingsCanvas->fillRect(0, y - 2, SCREEN_WIDTH, 20, TFT_WHITE);
-            settingsCanvas->setTextColor(TFT_BLACK, TFT_WHITE);
+            settingsCanvas->fillRect(0, y - 2, SCREEN_WIDTH, 20, getSchemeColorMenu());
+            settingsCanvas->setTextColor(TFT_BLACK, getSchemeColorMenu());
         } else {
             settingsCanvas->setTextColor(TFT_WHITE, TFT_BLACK);
         }

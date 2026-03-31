@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <Arduino.h> // Added for general definitions
+#include <Arduino.h> 
 
 #include "state_settings_rssi.h"
 
@@ -12,8 +12,6 @@
 #include "buttons.h"
 
 #include "ui.h"
-// #include "pstr_helper.h" // PICO FIX: Not needed.
-
 
 void StateMachine::SettingsRssiStateHandler::onEnter() {
     internalState = InternalState::WAIT_FOR_LOW;
@@ -96,94 +94,102 @@ void StateMachine::SettingsRssiStateHandler::onButtonChange(
         break;
 
         case InternalState::DONE:
-            // --- NEW MODEL SAVE LOGIC ---
-            // Save the newly calibrated RSSI values to the active model slot array
             EepromSettings.models[EepromSettings.activeModel].rssiAMin = EepromSettings.rssiAMin;
             EepromSettings.models[EepromSettings.activeModel].rssiAMax = EepromSettings.rssiAMax;
             #ifdef USE_DIVERSITY
                 EepromSettings.models[EepromSettings.activeModel].rssiBMin = EepromSettings.rssiBMin;
                 EepromSettings.models[EepromSettings.activeModel].rssiBMax = EepromSettings.rssiBMax;
             #endif
-            // ----------------------------
 
             EepromSettings.save();
-            StateMachine::switchState(StateMachine::State::MENU);
+            StateMachine::switchState(StateMachine::State::SETTINGS);
         break;
     }
 
     Ui::needUpdate();
 }
 
-
 void StateMachine::SettingsRssiStateHandler::onInitialDraw() {
-    Ui::needUpdate(); // Lazy. :(
+    Ui::needUpdate(); 
 }
 
 void StateMachine::SettingsRssiStateHandler::onUpdateDraw() {
     Ui::clear();
 
+    Ui::display.setTextSize(2);
+
     switch (internalState) {
         case InternalState::WAIT_FOR_LOW:
-            Ui::display.setTextSize(1);
+            Ui::display.setTextColor(getSchemeColorMenu(), TFT_BLACK);
             Ui::display.setCursor(0, 0);
-            // PICO FIX: Standard Strings (No PSTR2)
-            Ui::display.print("1/4\nTurn off all VTXs.");
-            Ui::display.setCursor(0, (CHAR_HEIGHT + 1) * 2);
-            Ui::display.print("Remove RX antennas.");
+            Ui::display.print("1/4");
+            Ui::display.setTextColor(TFT_WHITE, TFT_BLACK);
+            Ui::display.print("\nTurn off all\nVTXs.");
+            
+            Ui::display.setCursor(0, 60);
+            Ui::display.print("Remove RX\nantennas.");
 
-            Ui::display.setCursor(0, SCREEN_HEIGHT - CHAR_HEIGHT - 1);
-            Ui::display.print("Press MODE when ready.");
+            Ui::display.setCursor(0, SCREEN_HEIGHT - 36);
+            Ui::display.print("Press MODE\nwhen ready.");
         break;
 
         case InternalState::SCANNING_LOW:
-            Ui::display.setTextSize(1);
+            Ui::display.setTextColor(getSchemeColorMenu(), TFT_BLACK);
             Ui::display.setCursor(0, 0);
-            Ui::display.print("2/4\nScanning for lowest\nRSSI...");
+            Ui::display.print("2/4");
+            Ui::display.setTextColor(TFT_WHITE, TFT_BLACK);
+            Ui::display.print("\nScanning for\nlowest RSSI...");
         break;
 
         case InternalState::WAIT_FOR_HIGH:
-            Ui::display.setTextSize(1);
+            Ui::display.setTextColor(getSchemeColorMenu(), TFT_BLACK);
             Ui::display.setCursor(0, 0);
-            Ui::display.print("3/4\nTurn on your VTX.");
+            Ui::display.print("3/4");
+            Ui::display.setTextColor(TFT_WHITE, TFT_BLACK);
+            Ui::display.print("\nTurn on your\nVTX.");
 
-            Ui::display.setCursor(0, SCREEN_HEIGHT - CHAR_HEIGHT - 1);
-            Ui::display.print("Press MODE when ready.");
+            Ui::display.setCursor(0, SCREEN_HEIGHT - 36);
+            Ui::display.print("Press MODE\nwhen ready.");
         break;
 
         case InternalState::SCANNING_HIGH:
-            Ui::display.setTextSize(1);
+            Ui::display.setTextColor(getSchemeColorMenu(), TFT_BLACK);
             Ui::display.setCursor(0, 0);
-            Ui::display.print("4/4\nScanning for highest\nRSSI...");
+            Ui::display.print("4/4");
+            Ui::display.setTextColor(TFT_WHITE, TFT_BLACK);
+            Ui::display.print("\nScanning for\nhighest RSSI...");
         break;
 
         case InternalState::DONE:
-            Ui::display.setTextSize(1);
+            Ui::display.setTextColor(getSchemeColorMenu(), TFT_BLACK);
             Ui::display.setCursor(0, 0);
             Ui::display.print("All done!");
 
-            Ui::display.setCursor(0, CHAR_HEIGHT * 2);
+            Ui::display.setTextColor(TFT_WHITE, TFT_BLACK);
+            Ui::display.setCursor(0, 40);
             Ui::display.print("Min: ");
-
-            Ui::display.setCursor((CHAR_WIDTH + 1) * 5, CHAR_HEIGHT * 2);
+            Ui::display.setTextColor(getSchemeColorMenu(), TFT_BLACK);
+            Ui::display.setCursor(60, 40);
             Ui::display.print(EepromSettings.rssiAMin);
             #ifdef USE_DIVERSITY
-                Ui::display.setCursor((CHAR_WIDTH + 1) * 12, CHAR_HEIGHT * 2);
+                Ui::display.setCursor(140, 40);
                 Ui::display.print(EepromSettings.rssiBMin);
             #endif
 
-            Ui::display.setCursor(0, CHAR_HEIGHT * 3 + 1);
+            Ui::display.setTextColor(TFT_WHITE, TFT_BLACK);
+            Ui::display.setCursor(0, 64);
             Ui::display.print("Max: ");
-
-            Ui::display.setCursor((CHAR_WIDTH + 1) * 5, CHAR_HEIGHT * 3 + 1);
+            Ui::display.setTextColor(getSchemeColorMenu(), TFT_BLACK);
+            Ui::display.setCursor(60, 64);
             Ui::display.print(EepromSettings.rssiAMax);
             #ifdef USE_DIVERSITY
-                Ui::display.setCursor((CHAR_WIDTH + 1) * 12,
-                    CHAR_HEIGHT * 3 + 1);
+                Ui::display.setCursor(140, 64);
                 Ui::display.print(EepromSettings.rssiBMax);
             #endif
 
-            Ui::display.setCursor(0, SCREEN_HEIGHT - CHAR_HEIGHT - 1);
-            Ui::display.print("Press MODE to save.");
+            Ui::display.setTextColor(TFT_WHITE, TFT_BLACK);
+            Ui::display.setCursor(0, SCREEN_HEIGHT - 20);
+            Ui::display.print("Press MODE to save");
         break;
     }
 

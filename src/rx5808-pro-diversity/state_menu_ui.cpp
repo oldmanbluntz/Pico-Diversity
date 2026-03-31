@@ -2,6 +2,7 @@
 #include "state_menu.h"
 #include "ui.h"
 #include "ui_menu.h"
+#include "settings_eeprom.h"
 
 // Map the missing TFT_eSPI color
 #ifndef TFT_DARKGREY
@@ -36,7 +37,7 @@ void StateMachine::MenuStateHandler::drawMenuEntry() {
         int y = MENU_START_Y + (i * BOX_SPACING);
 
         uint16_t borderColor = (i == selected) ? TFT_GREEN : TFT_DARKGREY;
-        uint16_t textColor = (i == selected) ? TFT_CYAN : TFT_DARKGREY;
+        uint16_t textColor = (i == selected) ? getSchemeColorB() : TFT_DARKGREY;
         
         Ui::display.fillRect(BOX_X, y, BOX_W, BOX_H, TFT_BLACK);
         Ui::display.drawRect(BOX_X, y, BOX_W, BOX_H, borderColor);

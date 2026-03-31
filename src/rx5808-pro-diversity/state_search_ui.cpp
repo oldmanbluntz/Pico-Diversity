@@ -2,6 +2,7 @@
 #include "receiver.h"
 #include "channels.h"
 #include "ui.h"
+#include "settings_eeprom.h"
 
 #ifndef TFT_ORANGE
 #define TFT_ORANGE  0xFDA0
@@ -85,11 +86,14 @@ void StateMachine::SearchStateHandler::onUpdateDraw() {
     searchCanvas->setTextColor(letterColor, TFT_BLACK);
     searchCanvas->print(String(letter));
     
-    searchCanvas->setTextColor(TFT_WHITE, TFT_BLACK);
+    // Check if Night Mode is active for the numbers
+    uint16_t numColor = (EepromSettings.uiScheme == 1) ? TFT_RED : TFT_WHITE;
+    
+    searchCanvas->setTextColor(numColor, TFT_BLACK);
     searchCanvas->print(String(number));
 
     searchCanvas->setTextSize(FREQUENCY_TEXT_SIZE);
-    searchCanvas->setTextColor(TFT_WHITE, TFT_BLACK);
+    searchCanvas->setTextColor(numColor, TFT_BLACK);
     searchCanvas->setCursor(FREQUENCY_TEXT_X, FREQUENCY_TEXT_Y);
     searchCanvas->print(Channels::getFrequency(Receiver::activeChannel));
 

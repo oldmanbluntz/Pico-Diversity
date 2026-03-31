@@ -7,6 +7,7 @@
 #include "settings_internal.h"
 #include "ui.h"
 #include "receiver.h"
+#include "settings_eeprom.h"
 
 // Define your SPI1 pins
 #define TFT_MOSI 11
@@ -137,9 +138,9 @@ namespace Ui {
             }
 
             if (yB1 == yB2) {
-                for (int px = x1; px <= x2; px++) display.drawPixel(px, yB1, TFT_CYAN);
+                for (int px = x1; px <= x2; px++) display.drawPixel(px, yB1, getSchemeColorB());
             } else {
-                display.drawLine(x1, yB1, x2, yB2, TFT_CYAN);
+                display.drawLine(x1, yB1, x2, yB2, getSchemeColorB());
             }
 
             last_yA[i] = yA1;

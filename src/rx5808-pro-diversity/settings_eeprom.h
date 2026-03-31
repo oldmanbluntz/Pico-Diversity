@@ -7,6 +7,12 @@
 #include "settings_internal.h"
 #include "receiver.h"
 
+// --- Global Scheme Colors ---
+#define COLOR_YELLOW 0xFFE0
+#define COLOR_CYAN   0x07FF
+#define COLOR_RED    0xF800
+#define COLOR_ORANGE 0xFD20
+
 struct ModelData {
     char name[9];
     uint16_t rssiAMin;
@@ -24,16 +30,13 @@ struct EepromSettings {
     uint8_t searchManual;
     uint8_t searchOrderByChannel;
 
-    // These represent the currently loaded/active system values
     uint16_t rssiAMin;
     uint16_t rssiAMax;
 
-    // Customization Settings
     uint8_t uiLayout;
     uint8_t uiScheme;
     uint8_t screensaverStyle;
 
-    // Model Storage
     uint8_t activeModel;
     ModelData models[8];
 
@@ -65,12 +68,10 @@ static const struct {
     uint16_t rssiAMin = RSSI_MIN_VAL;
     uint16_t rssiAMax = RSSI_MAX_VAL;
 
-    // Customization Defaults
     uint8_t uiLayout = DEFAULT_UI_LAYOUT;
     uint8_t uiScheme = DEFAULT_UI_SCHEME;
     uint8_t screensaverStyle = DEFAULT_SCREENSAVER_STYLE;
 
-    // Model Defaults
     uint8_t activeModel = 0;
     ModelData models[8] = {}; 
 
@@ -88,5 +89,11 @@ static const struct {
 } EepromDefaults;
 
 extern EepromSettings EepromSettings;
+
+// --- Dynamic Color Pickers ---
+// Scheme 0 = Easter (Cyan/Yellow), Scheme 1 = Night (Red/Orange)
+inline uint16_t getSchemeColorA() { return (EepromSettings.uiScheme == 1) ? COLOR_RED : COLOR_YELLOW; }
+inline uint16_t getSchemeColorB() { return (EepromSettings.uiScheme == 1) ? COLOR_ORANGE : COLOR_CYAN; }
+inline uint16_t getSchemeColorMenu() { return (EepromSettings.uiScheme == 1) ? COLOR_RED : COLOR_CYAN; }
 
 #endif
