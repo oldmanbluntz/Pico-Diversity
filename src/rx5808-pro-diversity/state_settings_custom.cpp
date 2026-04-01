@@ -40,15 +40,15 @@ void StateMachine::SettingsCustomStateHandler::onButtonChange(Button button, But
             break;
         case Button::MODE:
             if (selectedItem == 0) {
-                // Layout Toggle 
+                // Layout Toggle (Bars vs Graphs)
                 EepromSettings.uiLayout = (EepromSettings.uiLayout == 0) ? 1 : 0;
                 EepromSettings.save();
             } else if (selectedItem == 1) {
-                // Scheme Toggle (Easter/Night)
+                // Scheme Toggle (Easter vs Night)
                 EepromSettings.uiScheme = (EepromSettings.uiScheme == 0) ? 1 : 0;
                 EepromSettings.save();
             } else if (selectedItem == 2) {
-                // Screensaver Toggle (Cube/Tubes)
+                // Screensaver Toggle (Cube vs Tubes)
                 EepromSettings.screensaverStyle = (EepromSettings.screensaverStyle == 0) ? 1 : 0;
                 EepromSettings.save();
             } else if (selectedItem == 3) {
@@ -60,7 +60,7 @@ void StateMachine::SettingsCustomStateHandler::onButtonChange(Button button, But
 }
 
 void StateMachine::SettingsCustomStateHandler::onInitialDraw() {
-    Ui::needDisplay();
+    Ui::needUpdate(); // <--- FIXED: Now correctly triggers the draw cycle!
 }
 
 void StateMachine::SettingsCustomStateHandler::onUpdateDraw() {
@@ -68,7 +68,6 @@ void StateMachine::SettingsCustomStateHandler::onUpdateDraw() {
 
     customCanvas->fillScreen(TFT_BLACK);
     
-    // Header uses dynamic scheme color
     customCanvas->setTextSize(2);
     customCanvas->setTextColor(getSchemeColorMenu(), TFT_BLACK);
     customCanvas->setCursor(4, 4);
@@ -76,7 +75,7 @@ void StateMachine::SettingsCustomStateHandler::onUpdateDraw() {
     customCanvas->drawFastHLine(0, 24, SCREEN_WIDTH, getSchemeColorMenu());
 
     char items[4][32];
-    sprintf(items[0], "Layout: %s", EepromSettings.uiLayout == 0 ? "Default" : "Alt");
+    sprintf(items[0], "Layout: %s", EepromSettings.uiLayout == 0 ? "Bars" : "Graphs");
     sprintf(items[1], "Scheme: %s", EepromSettings.uiScheme == 0 ? "Easter" : "Night");
     sprintf(items[2], "Saver:  %s", EepromSettings.screensaverStyle == 0 ? "Cube" : "Tubes");
     strcpy(items[3], "Back");
@@ -85,7 +84,6 @@ void StateMachine::SettingsCustomStateHandler::onUpdateDraw() {
         int y = 32 + (i * 22); 
         
         if (i == selectedItem) {
-            // Highlight bar uses dynamic scheme color
             customCanvas->fillRect(0, y - 2, SCREEN_WIDTH, 20, getSchemeColorMenu());
             customCanvas->setTextColor(TFT_BLACK, getSchemeColorMenu());
         } else {
